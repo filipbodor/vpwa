@@ -1,27 +1,30 @@
 <template>
-  <q-item clickable tag="a" target="_blank" :href="link">
-    <q-item-section v-if="icon" avatar>
-      <q-icon :name="icon" />
+
+  <q-item clickable>
+
+    <q-item-section avatar>
+      <q-icon :name="'person' || props.icon" size="36px"/>
     </q-item-section>
 
     <q-item-section>
-      <q-item-label>{{ title }}</q-item-label>
-      <q-item-label caption>{{ caption }}</q-item-label>
+      <q-item-label>{{ chatContact.name }}</q-item-label>
+      <q-item-label caption>{{ chatContact.last_message }}</q-item-label>
     </q-item-section>
+
+
+
   </q-item>
+
 </template>
+<!-- eslint-disable vue/block-lang -->
 
-<script setup lang="ts">
-export interface EssentialLinkProps {
-  title: string;
-  caption?: string;
-  link?: string;
-  icon?: string;
-}
-
-withDefaults(defineProps<EssentialLinkProps>(), {
-  caption: '',
-  link: '#',
-  icon: '',
-});
+<script setup>
+const chatContact = defineProps({
+  icon: String,
+  name:{
+    type: String,
+    required: true
+  },
+  last_message: String
+})
 </script>
