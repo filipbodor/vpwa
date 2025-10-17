@@ -1,30 +1,39 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" class="no-overflow">
+    <!-- Header -->
     <q-header elevated>
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title> Tu bude meno aktualneho chatu a ak nebude ziaden otvoreny tak nazov apky </q-toolbar-title>
-
-
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+        />
+        <q-toolbar-title>
+          Tu bude meno aktuálneho chatu a ak nebude žiaden otvorený tak názov apky
+        </q-toolbar-title>
+        <LogOutBtn />
       </q-toolbar>
     </q-header>
 
+    <!-- Drawer -->
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Chats </q-item-label>
+        <q-item-label header>Chats</q-item-label>
         <chatContact
-        v-for="contact in contacts"
-        :key="contact.name"
-        :name="contact.name"
-        :last_message="contact.last_message"
-        :icon="contact.icon"
+          v-for="contact in contacts"
+          :key="contact.name"
+          :name="contact.name"
+          :last_message="contact.last_message"
+          :icon="contact.icon"
         />
-
       </q-list>
     </q-drawer>
 
-    <q-page-container>
+    <!-- Main page area -->
+    <q-page-container class="no-overflow">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -32,6 +41,7 @@
 <!-- eslint-disable vue/block-lang -->
 
 <script setup >
+import LogOutBtn from 'src/components/LogOutBtn.vue';
 import { ref } from 'vue';
 import chatContact from 'components/EssentialLink.vue'
 //import { name } from '@vue/eslint-config-prettier/skip-formatting';
@@ -48,3 +58,10 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 </script>
+
+<style scoped>
+.no-overflow {
+  overflow: hidden !important;
+  height: 100vh;
+}
+</style>
