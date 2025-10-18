@@ -54,7 +54,7 @@ import LogOutBtn from 'src/components/LogOutBtn.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { listChannels, createChannel, joinChannel } from 'src/services/api/channels';
-import CreateChannelDialog from 'src/components/CreateChannelDialog.vue';
+import CreateChannelDialog from 'src/components/sidebar/CreateChannelDialog.vue';
 
 const router = useRouter();
 const leftDrawerOpen = ref(false);

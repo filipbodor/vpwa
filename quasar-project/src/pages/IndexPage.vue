@@ -27,10 +27,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { listMessages, postMessage, type Message } from 'src/services/api/channels';
+import { useRoute, useRouter } from 'vue-router';
+import { listMessages, postMessage, joinChannelByName, type Message } from 'src/services/api/channels';
 
 const route = useRoute();
+const router = useRouter();
 const text = ref('');
 const chatContainer = ref<HTMLElement | null>(null);
 const messages = ref<Message[]>([]);
@@ -53,13 +54,43 @@ watch(
 
 async function sendMessage() {
   const id = Number(route.query.channelId);
-  if (!text.value.trim() || !id) return;
-  const content = text.value;
+  const raw = text.value.trim();
+  if (!raw) return;
+
+  // Slash commands
+  if (raw.startsWith('/')) {
+    await handleSlashCommand(raw);
+    text.value = '';
+    return;
+  }
+
+  if (!id) return;
+  const content = raw;
   text.value = '';
   const msg = await postMessage(id, content);
   messages.value.push(msg);
   await nextTick();
   scrollToBottom();
+}
+
+async function handleSlashCommand(input: string) {
+  const parts = input.trim().split(/\s+/);
+  const head = parts[0] || '';
+  const command = head.startsWith('/') ? head.slice(1).toLowerCase() : head.toLowerCase();
+  if (command === 'join') {
+    const name = parts[1];
+    if (!name) {
+      return;
+    }
+    try {
+      const res = await joinChannelByName(name);
+      const ch = res.channel;
+      await router.push({ path: '/', query: { channelId: String(ch.id) } });
+    } catch (e: any) {
+    }
+    return;
+  }
+
 }
 
 function scrollToBottom() {

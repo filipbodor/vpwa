@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import BaseModal from './BaseModal.vue'
+import BaseModal from './../modal/BaseModal.vue'
 
 const props = defineProps<{ modelValue: boolean; loading?: boolean }>()
 const emit = defineEmits<{

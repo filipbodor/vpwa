@@ -42,6 +42,23 @@ class ChannelController {
     await channel.users().attach([user.id])
     return response.ok({ ok: true })
   }
+
+  async joinByName({ request, auth, response }) {
+    const user = await auth.getUser()
+    const name = request.input('name')
+    if (!name) {
+      return response.badRequest({ error: { message: 'Channel name is required' } })
+    }
+    const channel = await Channel.query().where('name', name).first()
+    if (!channel) {
+      return response.notFound({ error: { message: 'Channel not found' } })
+    }
+    const existing = await channel.users().where('user_id', user.id).first()
+    if (!existing) {
+      await channel.users().attach([user.id])
+    }
+    return response.ok({ ok: true, channel })
+  }
 }
 
 module.exports = ChannelController

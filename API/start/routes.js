@@ -32,6 +32,7 @@ Route.get('channels', 'ChannelController.index').middleware(['auth'])
 Route.post('channels', 'ChannelController.store').middleware(['auth'])
 Route.get('channels/:id', 'ChannelController.show').middleware(['auth'])
 Route.post('channels/:id/join', 'ChannelController.join').middleware(['auth'])
+Route.post('channels/join-by-name', 'ChannelController.joinByName').middleware(['auth'])
 
 // Messages within a channel
 Route.get('channels/:channelId/messages', 'MessageController.index').middleware(['auth'])

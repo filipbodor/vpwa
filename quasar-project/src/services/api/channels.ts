@@ -36,6 +36,10 @@ export function joinChannel(id: number) {
   return api.request<{ ok: true }>('POST', `/channels/${id}/join`);
 }
 
+export function joinChannelByName(name: string) {
+  return api.request<{ ok: true; channel: Channel }>('POST', `/channels/join-by-name`, { name });
+}
+
 export function listMessages(channelId: number) {
   return api.request<Message[]>('GET', `/channels/${channelId}/messages`);
 }
