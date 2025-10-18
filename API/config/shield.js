@@ -131,8 +131,9 @@ module.exports = {
   | routes does have a valid token to execute an action.
   |
   */
+ // TODO: Enable CSRF protection
   csrf: {
-    enable: true,
+    enable: false,
     methods: ['POST', 'PUT', 'DELETE'],
     filterUris: [],
     cookieOptions: {

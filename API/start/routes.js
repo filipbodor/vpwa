@@ -17,3 +17,9 @@
 const Route = use('Route')
 
 Route.on('/').render('welcome')
+
+// Auth endpoints (JWT)
+Route.post('auth/register', 'AuthController.register')
+Route.post('auth/login', 'AuthController.login')
+Route.get('auth/me', 'AuthController.me').middleware(['auth'])
+Route.post('auth/logout', 'AuthController.logout').middleware(['auth'])
