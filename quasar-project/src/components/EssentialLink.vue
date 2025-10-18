@@ -9,6 +9,7 @@
       <q-item-label caption>{{ chatContact.last_message }}</q-item-label>
     </q-item-section>
   </q-item>
+  
 </template>
 <!-- eslint-disable vue/block-lang -->
 

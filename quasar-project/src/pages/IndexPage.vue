@@ -1,112 +1,84 @@
 <template>
-  <q-page class="chat-page column">
-    <!-- Chat messages container -->
-    <div class="chat-container" ref="chatContainer">
-      <div
+  <q-page class="q-pa-md column justify-between">
+    <!-- Chat messages -->
+    <div class="chat-messages scroll" ref="chatContainer">
+      <q-chat-message
         v-for="(msg, index) in messages"
         :key="index"
-        :class="['chat-message', msg.sender === 'me' ? 'me' : 'other']"
+        :text="[msg.text]"
+        :sent="msg.sender === 'me'"
+        :bg-color="msg.sender === 'me' ? 'blue-8' : 'grey-3'"
+      />
+      <q-chat-message
+        name="Jane"
+        bg-color="grey-3"
       >
-        <q-card flat class="q-pa-sm" :class="msg.sender === 'me' ? 'me-card' : 'other-card'">
-          {{ msg.text }}
-        </q-card>
-      </div>
+        <q-spinner-dots size="2rem" />
+      </q-chat-message>
     </div>
 
-    <!-- Footer input -->
-    <div class="chat-footer q-pa-sm row items-center">
+
+    <!-- Input footer -->
+    <div class="row items-center q-gutter-sm q-pa-sm bg-white">
       <q-input
+        class="col"
         rounded
         outlined
         v-model="text"
         placeholder="Type a message..."
-        class="col"
         @keyup.enter="sendMessage"
       />
-      <q-btn icon="send" flat round @click="sendMessage" />
+      <q-btn icon="send" round flat @click="sendMessage" />
     </div>
   </q-page>
+
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
-import messagesData from 'src/assets/messages.json';
+import { ref, onMounted, nextTick } from 'vue'
+import messagesData from 'src/assets/messages.json'
 
-const text = ref('');
-const messages = ref<{ sender: string; text: string }[]>([]);
-const chatContainer = ref<HTMLElement | null>(null);
+const text = ref('')
+const messages = ref<{ sender: string; text: string }[]>([])
+const chatContainer = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
-  const repeatTimes = 200;
-  const repeatedMessages: { sender: string; text: string }[] = [];
+  const repeatTimes = 200
+  const repeatedMessages: { sender: string; text: string }[] = []
+
   for (let i = 0; i < repeatTimes; i++) {
-    repeatedMessages.push(...messagesData);
+    repeatedMessages.push(...messagesData)
   }
-  messages.value = repeatedMessages;
-  await nextTick();
-  scrollToBottom();
-});
+
+  messages.value = repeatedMessages
+  await nextTick()
+  scrollToBottom()
+})
 
 function sendMessage() {
-  if (!text.value.trim()) return;
-  messages.value.push({ sender: 'Me', text: text.value });
-  text.value = '';
-  nextTick(() => scrollToBottom());
+  if (!text.value.trim()) return
+  messages.value.push({ sender: 'me', text: text.value })
+  text.value = ''
+  nextTick(() => scrollToBottom())
 }
 
 function scrollToBottom() {
   if (chatContainer.value) {
-    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight
   }
 }
 </script>
 
 <style scoped>
-.chat-page {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden; /* prevent extra scroll */
-}
-
-.chat-container {
+.chat-messages {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
   overflow-y: auto;
   background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 8px;
 }
 
-/* Message alignment */
-.chat-message {
-  display: flex;
-  max-width: 60%;
-}
-
-.chat-message.me {
-  align-self: flex-end;
-}
-
-.chat-message.other {
-  align-self: flex-start;
-}
-
-/* Card colors */
-.me-card {
-  background-color: #1e88e5;
-  color: white;
-}
-
-.other-card {
-  background-color: #e0e0e0;
-  color: black;
-}
-
-/* Footer styling */
-.chat-footer {
-  flex-shrink: 0;
-  background-color: white;
+.q-page {
+  height: 100%;
 }
 </style>
