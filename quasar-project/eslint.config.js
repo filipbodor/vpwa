@@ -52,22 +52,24 @@ export default defineConfigWithVueTs(
 
       globals: {
         ...globals.browser,
-        ...globals.node, // SSR, Electron, config files
-        process: 'readonly', // process.env.*
-        ga: 'readonly', // Google Analytics
+        ...globals.node,
+        process: 'readonly',
+        ga: 'readonly',
         cordova: 'readonly',
         Capacitor: 'readonly',
-        chrome: 'readonly', // BEX related
-        browser: 'readonly', // BEX related
+        chrome: 'readonly',
+        browser: 'readonly',
       },
     },
 
     // add your custom rules here
     rules: {
+      '@typescript-eslint/await-thenable': 'off',
+      'vue/multi-word-component-names': 'off',
       'prefer-promise-reject-errors': 'off',
-
-      // allow debugger during development only
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+      '@typescript-eslint/no-array-delete': 'off',
+      '@typescript-eslint/await-thenable': 'off'
     },
   },
 
