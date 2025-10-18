@@ -58,7 +58,8 @@
     />
 
     <!-- Submit button -->
-    <q-btn label="Sign Up" type="submit" color="primary" class="full-width" />
+    <q-btn :loading="loading" label="Sign Up" type="submit" color="primary" class="full-width" />
+    <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
   </q-form>
 </q-card-section>
     </q-card>
@@ -69,6 +70,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { QForm } from 'quasar'
+import { register } from 'src/services/api/auth'
 
 const router = useRouter()
 const signupForm = ref<QForm | null>(null)
@@ -80,6 +82,8 @@ const repeatPassword = ref('')
 
 const password = ref('')
 const showPassword = ref(false)
+const loading = ref(false)
+const error = ref('')
 
 const passwordInputType = computed<'text' | 'password'>(() =>
   showPassword.value ? 'text' : 'password'
@@ -90,8 +94,21 @@ async function submitForm() {
 
   const valid = await signupForm.value.validate()
   if (valid) {
-    // All fields are valid — navigate to index page
-    await router.push('/')  // <-- this does the routing
+    if (password.value !== repeatPassword.value) {
+      error.value = 'Passwords do not match'
+      return
+    }
+    error.value = ''
+    loading.value = true
+    try {
+      const username = `${firstName.value} ${lastName.value}`.trim()
+      await register(username, email.value, password.value)
+      await router.push('/')
+    } catch (e: any) {
+      error.value = e?.message || 'Signup failed'
+    } finally {
+      loading.value = false
+    }
   } else {
     // Some fields are invalid
     console.log('Form is invalid!')

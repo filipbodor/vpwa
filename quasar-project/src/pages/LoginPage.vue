@@ -34,11 +34,12 @@
 
 
     <!-- Submit button -->
-    <q-btn label="Log In" type="submit" color="primary" class="full-width" />
+    <q-btn :loading="loading" label="Log In" type="submit" color="primary" class="full-width" />
+    <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
   </q-form>
   <q-separator class="q-my-md" />
   <div class="text-center q-mb-md">Don’t have an account?</div>
-      <q-btn label="Sign Up" type="submit" color="primary" class="full-width" />
+      <q-btn label="Sign Up" type="button" color="primary" class="full-width" @click="router.push('/signup')" />
 </q-card-section>
     </q-card>
   </div>
@@ -48,6 +49,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { QForm } from 'quasar'
+import { login } from 'src/services/api/auth'
 
 const router = useRouter()
 const signupForm = ref<QForm | null>(null)
@@ -56,6 +58,8 @@ const email = ref('')
 
 const password = ref('')
 const showPassword = ref(false)
+const loading = ref(false)
+const error = ref('')
 
 const passwordInputType = computed<'text' | 'password'>(() =>
   showPassword.value ? 'text' : 'password'
@@ -66,8 +70,16 @@ async function submitForm() {
 
   const valid = await signupForm.value.validate()
   if (valid) {
-    // All fields are valid — navigate to index page
-    await router.push('/')  // <-- this does the routing
+    error.value = ''
+    loading.value = true
+    try {
+      await login(email.value, password.value)
+      await router.push('/')
+    } catch (e: any) {
+      error.value = e?.message || 'Login failed'
+    } finally {
+      loading.value = false
+    }
   } else {
     // Some fields are invalid
     console.log('Form is invalid!')

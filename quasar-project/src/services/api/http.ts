@@ -32,7 +32,7 @@ class ApiClient {
       method,
       headers,
       body: hasBody ? JSON.stringify(body) : null,
-      credentials: 'include',
+      // Do not include credentials; using Authorization bearer instead
     });
 
     const text = await res.text();
