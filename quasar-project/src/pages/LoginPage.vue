@@ -33,12 +33,12 @@
     />
 
 
-    <!-- Submit button -->
+
     <q-btn label="Log In" type="submit" color="primary" class="full-width" />
   </q-form>
   <q-separator class="q-my-md" />
   <div class="text-center q-mb-md">Don’t have an account?</div>
-      <q-btn label="Sign Up" type="submit" color="primary" class="full-width" />
+      <q-btn label="Sign Up" type="submit" color="primary" class="full-width" to="signup" />
 </q-card-section>
     </q-card>
   </div>
