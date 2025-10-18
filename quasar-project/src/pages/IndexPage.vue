@@ -14,16 +14,15 @@
       </q-chat-message>
     </div>
 
-    <!-- Compact input footer -->
-    <div class="chat-footer row items-center q-gutter-sm">
+    <!-- Compact footer -->
+    <div class="chat-footer row items-center">
       <q-input
-        class="col"
-        dense
+        class="col rounded-input"
+        outlined
         rounded
         v-model="text"
         placeholder="Type a message..."
         @keyup.enter="sendMessage"
-        :autogrow="false"
       />
       <q-btn icon="send" round flat dense @click="sendMessage" />
     </div>
@@ -82,8 +81,14 @@ function scrollToBottom() {
 }
 
 .chat-footer {
-  padding: 4px 8px; /* reduce padding */
-  background-color: white;
-  border-top: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px; /* reduce padding to remove unused white space */
+  background-color: #f5f5f5;;
+}
+
+.rounded-input .q-field__control {
+  padding-top: 4px; /* reduce vertical padding inside input */
+  padding-bottom: 4px;
 }
 </style>
