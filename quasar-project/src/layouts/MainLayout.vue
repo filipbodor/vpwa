@@ -25,15 +25,21 @@
           <span>Channels</span>
           <q-space />
           <q-btn dense flat icon="refresh" @click="loadChannels" :loading="loadingChannels" />
+          <q-btn dense flat icon="add" @click="showCreate = true" />
         </q-item-label>
         <q-item v-for="ch in channels" :key="ch.id" clickable @click="openChannel(ch.id)">
           <q-item-section>
             <q-item-label># {{ ch.name }}</q-item-label>
             <q-item-label caption>{{ ch.description }}</q-item-label>
           </q-item-section>
+          <q-item-section side>
+            <q-btn dense flat round icon="login" @click.stop="joinChannel(ch.id)" />
+          </q-item-section>
         </q-item>
       </q-list>
     </q-drawer>
+
+    <CreateChannelDialog v-model="showCreate" :loading="creating" @submit="submitCreate" />
 
     <!-- Main page area -->
     <q-page-container class="no-overflow">
@@ -47,12 +53,15 @@
 import LogOutBtn from 'src/components/LogOutBtn.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { listChannels } from 'src/services/api/channels';
+import { listChannels, createChannel, joinChannel } from 'src/services/api/channels';
+import CreateChannelDialog from 'src/components/CreateChannelDialog.vue';
 
 const router = useRouter();
 const leftDrawerOpen = ref(false);
 const channels = ref<{ id: number; name: string; description?: string | null }[]>([]);
 const loadingChannels = ref(false);
+const showCreate = ref(false);
+const creating = ref(false);
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -73,6 +82,21 @@ function openChannel(id: number) {
 }
 
 onMounted(loadChannels);
+
+async function submitCreate(payload: { name: string; description?: string }) {
+  creating.value = true;
+  try {
+    const ch = await createChannel(payload)
+    channels.value.unshift(ch)
+    showCreate.value = false
+    openChannel(ch.id)
+  } catch (e: any) {
+    
+  } finally {
+    creating.value = false
+  }
+}
+
 </script>
 
 <style scoped>

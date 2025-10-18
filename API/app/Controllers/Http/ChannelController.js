@@ -4,8 +4,14 @@ const Channel = use('App/Models/Channel')
 
 class ChannelController {
   async index({ auth, response }) {
-    await auth.check()
-    const channels = await Channel.query().withCount('messages as message_count').fetch()
+    const user = await auth.getUser()
+    const channels = await Channel
+      .query()
+      .innerJoin('channel_user', 'channels.id', 'channel_user.channel_id')
+      .where('channel_user.user_id', user.id)
+      .select('channels.*')
+      .withCount('messages as message_count')
+      .fetch()
     return response.ok(channels)
   }
 
