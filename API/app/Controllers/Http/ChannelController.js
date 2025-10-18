@@ -21,6 +21,12 @@ class ChannelController {
     await auth.check()
     const channel = await Channel.findOrFail(params.id)
     await channel.load('users')
+    await channel.load(builder => builder
+      .load('messages', (q) => {
+        q.with('user')
+        q.orderBy('created_at', 'asc')
+      })
+    )
     return response.ok(channel)
   }
 

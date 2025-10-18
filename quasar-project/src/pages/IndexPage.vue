@@ -2,13 +2,10 @@
   <q-page class="chat-page column">
     <!-- Chat messages container -->
     <div class="chat-container" ref="chatContainer">
-      <div
-        v-for="(msg, index) in messages"
-        :key="index"
-        :class="['chat-message', msg.sender === 'me' ? 'me' : 'other']"
-      >
-        <q-card flat class="q-pa-sm" :class="msg.sender === 'me' ? 'me-card' : 'other-card'">
-          {{ msg.text }}
+      <div v-for="m in messages" :key="m.id" class="q-mb-xs">
+        <q-card flat bordered class="q-pa-sm">
+          <div class="text-caption text-grey">{{ m.user?.username || m.user_id }} • {{ m.created_at }}</div>
+          <div>{{ m.content }}</div>
         </q-card>
       </div>
     </div>
@@ -29,29 +26,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
-import messagesData from 'src/assets/messages.json';
+import { ref, onMounted, nextTick, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { listMessages, postMessage, type Message } from 'src/services/api/channels';
 
+const route = useRoute();
 const text = ref('');
-const messages = ref<{ sender: string; text: string }[]>([]);
 const chatContainer = ref<HTMLElement | null>(null);
+const messages = ref<Message[]>([]);
 
-onMounted(async () => {
-  const repeatTimes = 200;
-  const repeatedMessages: { sender: string; text: string }[] = [];
-  for (let i = 0; i < repeatTimes; i++) {
-    repeatedMessages.push(...messagesData);
-  }
-  messages.value = repeatedMessages;
+async function loadMessages(channelId: number) {
+  const res = await listMessages(channelId);
+  messages.value = res;
   await nextTick();
   scrollToBottom();
-});
+}
 
-function sendMessage() {
-  if (!text.value.trim()) return;
-  messages.value.push({ sender: 'Me', text: text.value });
+watch(
+  () => route.query.channelId,
+  (val) => {
+    const id = Number(val);
+    if (id) loadMessages(id);
+  },
+  { immediate: true }
+);
+
+async function sendMessage() {
+  const id = Number(route.query.channelId);
+  if (!text.value.trim() || !id) return;
+  const content = text.value;
   text.value = '';
-  nextTick(() => scrollToBottom());
+  const msg = await postMessage(id, content);
+  messages.value.push(msg);
+  await nextTick();
+  scrollToBottom();
 }
 
 function scrollToBottom() {

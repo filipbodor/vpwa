@@ -21,7 +21,7 @@ export type Message = {
 };
 
 export function listChannels() {
-  return api.request<{ data: Channel[] }>('GET', '/channels');
+  return api.request<Channel[]>('GET', '/channels');
 }
 
 export function getChannel(id: number) {
@@ -37,7 +37,7 @@ export function joinChannel(id: number) {
 }
 
 export function listMessages(channelId: number) {
-  return api.request<{ data: Message[] }>('GET', `/channels/${channelId}/messages`);
+  return api.request<Message[]>('GET', `/channels/${channelId}/messages`);
 }
 
 export function postMessage(channelId: number, content: string) {

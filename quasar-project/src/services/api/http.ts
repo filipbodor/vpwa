@@ -42,6 +42,7 @@ class ApiClient {
       const message = (data as any)?.error?.message || res.statusText || 'Request failed';
       throw new Error(message);
     }
+    console.log('request', data);
     return data as T;
   }
 }
