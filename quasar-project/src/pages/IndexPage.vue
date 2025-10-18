@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md column justify-between">
+  <q-page class="chat-page column">
     <!-- Chat messages -->
     <div class="chat-messages scroll" ref="chatContainer">
       <q-chat-message
@@ -9,29 +9,25 @@
         :sent="msg.sender === 'me'"
         :bg-color="msg.sender === 'me' ? 'blue-8' : 'grey-3'"
       />
-      <q-chat-message
-        name="Jane"
-        bg-color="grey-3"
-      >
+      <q-chat-message name="Jane" bg-color="grey-3">
         <q-spinner-dots size="2rem" />
       </q-chat-message>
     </div>
 
-
-    <!-- Input footer -->
-    <div class="row items-center q-gutter-sm q-pa-sm bg-white">
+    <!-- Compact input footer -->
+    <div class="chat-footer row items-center q-gutter-sm">
       <q-input
         class="col"
+        dense
         rounded
-        outlined
         v-model="text"
         placeholder="Type a message..."
         @keyup.enter="sendMessage"
+        :autogrow="false"
       />
-      <q-btn icon="send" round flat @click="sendMessage" />
+      <q-btn icon="send" round flat dense @click="sendMessage" />
     </div>
   </q-page>
-
 </template>
 
 <script setup lang="ts">
@@ -70,15 +66,24 @@ function scrollToBottom() {
 </script>
 
 <style scoped>
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
   background-color: #f5f5f5;
-  border-radius: 8px;
   padding: 8px;
 }
 
-.q-page {
-  height: 100%;
+.chat-footer {
+  padding: 4px 8px; /* reduce padding */
+  background-color: white;
+  border-top: 1px solid #ccc;
 }
 </style>
