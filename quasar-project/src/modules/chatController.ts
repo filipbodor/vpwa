@@ -8,6 +8,12 @@ export type ThreadId = { kind: ChatKind; id: string }
 
 const currentUserId = 'me'
 export const userStatus = ref<'online' | 'away' | 'busy' | 'offline'>('online')
+const users = ref<DirectMessage[]>([
+  { id: 'me', name: 'Me', last_message: '', icon: 'person', status: 'online' },
+  { id: 'alice', name: 'alice', last_message: '', icon: 'face', status: 'online' },
+  { id: 'bob', name: 'bob', last_message: '', status: 'away' },
+  { id: 'charlie', name: 'charlie', last_message: '', status: 'offline' },
+])
 
 const channels = ref<Channel[]>([
   { id: 'general', name: 'general', description: 'General chat', isPrivate: false, ownerId: currentUserId, members: [currentUserId], lastActiveAt: Date.now() },
@@ -64,6 +70,43 @@ export function useChatController() {
     channels.value = channels.value.filter(c => c.id !== id)
   }
 
+  function findChannelByName(name: string) {
+    return channels.value.find(c => c.name === name)
+  }
+
+  function addUserToChannel(name: string, userId: string) {
+    const ch = findChannelByName(name)
+    if (!ch) return false
+    if (!ch.members.includes(userId)) ch.members.push(userId)
+    return true
+  }
+
+  function removeUserFromChannel(name: string, userId: string) {
+    const ch = findChannelByName(name)
+    if (!ch) return false
+    ch.members = ch.members.filter(m => m !== userId)
+    return true
+  }
+
+  function isOwner(name: string, userId: string) {
+    const ch = findChannelByName(name)
+    return !!ch && ch.ownerId === userId
+  }
+
+  function ensurePublicChannel(name: string) {
+    let ch = findChannelByName(name)
+    if (!ch) {
+      createChannel({ name, isPrivate: false })
+      ch = findChannelByName(name)!
+    }
+    return ch
+  }
+
+  function findUserIdByNickname(nickname: string) {
+    const u = users.value.find(u => u.name.toLowerCase() === nickname.toLowerCase())
+    return u?.id as string | undefined
+  }
+
   function sendMessage(text: string) {
     if (!activeThread.value) return
     const key = threadKey(activeThread.value)
@@ -71,7 +114,7 @@ export function useChatController() {
     list.push({ id: Math.random().toString(36).slice(2, 9), sender: 'me', text, createdAt: Date.now() })
   }
 
-  return { channelViews, dmViews, activeMessages, activeThread, openChannel, openDM, createChannel, leaveChannel, deleteChannel, sendMessage }
+  return { channelViews, dmViews, activeMessages, activeThread, openChannel, openDM, createChannel, leaveChannel, deleteChannel, sendMessage, findChannelByName, addUserToChannel, removeUserFromChannel, isOwner, ensurePublicChannel, findUserIdByNickname, currentUserId }
 }
 
 
