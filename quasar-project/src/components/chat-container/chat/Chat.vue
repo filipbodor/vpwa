@@ -7,24 +7,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed } from 'vue'
 import ChatMessage from 'src/components/chat-container/chat/include/ChatMessage.vue'
 import ChatInput from 'src/components/chat-container/chat/include/ChatInput.vue'
-import messagesData from 'src/assets/messages.json'
+import { useChatController } from 'src/modules/chatController'
 
-const messages = ref<{ sender: string; text: string }[]>([])
-
-onMounted(() => {
-  const repeatTimes = 200
-  const repeatedMessages: { sender: string; text: string }[] = []
-  for (let i = 0; i < repeatTimes; i++) {
-    repeatedMessages.push(...messagesData)
-  }
-  messages.value = repeatedMessages
-})
+const controller = useChatController()
+const messages = computed<{ sender: string; text: string }[]>(() =>
+  controller.activeMessages.value.map((m) => ({ sender: m.sender, text: m.text }))
+)
 
 function sendMessage(text: string) {
-  messages.value.push({ sender: 'me', text })
+  controller.sendMessage(text)
 }
 </script>
 

@@ -14,7 +14,7 @@
   </template>
   
   <script setup lang="ts">
-  import { ref, nextTick, defineProps, watch, onMounted } from 'vue'
+  import { ref, nextTick, watch, onMounted } from 'vue'
   
   const props = defineProps<{
     messages: { sender: string; text: string }[]

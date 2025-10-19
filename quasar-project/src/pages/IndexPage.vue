@@ -4,7 +4,6 @@
       Tu bude meno aktuálneho chatu a ak nebude žiaden otvorený tak názov apky
     </template>
   </ChatContainer>
-  
 </template>
 
 <script setup lang="ts">
