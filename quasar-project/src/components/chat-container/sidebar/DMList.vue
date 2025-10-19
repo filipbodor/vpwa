@@ -42,10 +42,19 @@
 </template>
 
 <script setup lang="ts">
-import type { DirectMessage } from 'src/models/DirectMessage'
 import DMStatus from 'src/components/chat-container/sidebar/DMStatus.vue'
 
-defineProps<{ dms: DirectMessage[] }>()
+interface DMView {
+  id: string
+  userId: string
+  name: string
+  avatar?: string
+  status?: 'online' | 'away' | 'busy' | 'offline'
+  lastMessageAt?: number
+  icon?: string
+}
+
+defineProps<{ dms: DMView[] }>()
 defineEmits(['open'])
 </script>
 

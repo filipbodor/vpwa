@@ -2,10 +2,10 @@
   <div class="user-bar">
     <div class="user-info">
       <q-avatar size="36px" color="primary" text-color="white">
-        <span class="avatar-text">{{ getInitials(username || 'Meno uzivatela') }}</span>
+        <span class="avatar-text">{{ getInitials(username) }}</span>
       </q-avatar>
       <div class="user-details">
-        <div class="user-name">{{ username || 'Meno uzivatela' }}</div>
+        <div class="user-name">{{ username }}</div>
         <div class="user-status-text">
           <q-badge
             :color="statusColor"
@@ -73,12 +73,19 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { userStatus } from 'src/modules/chatController'
+import { useChat } from 'src/composables'
 
-const { username } = defineProps<{ username?: string }>()
+const props = defineProps<{ username?: string }>()
+const chat = useChat()
 
-function setStatus(s: 'online' | 'away' | 'busy' | 'offline') {
-  userStatus.value = s
+const username = computed(() => props.username || chat.currentUser.value?.name || 'Meno uzivatela')
+
+async function setStatus(s: 'online' | 'away' | 'busy' | 'offline') {
+  try {
+    await chat.updateStatus(s)
+  } catch (error) {
+    console.error('Failed to update status:', error)
+  }
 }
 
 function getInitials(name: string) {
@@ -91,7 +98,7 @@ function getInitials(name: string) {
 }
 
 const statusColor = computed(() => {
-  switch (userStatus.value) {
+  switch (chat.userStatus.value) {
     case 'online': return 'green-6'
     case 'away': return 'amber-6'
     case 'busy': return 'red-6'
@@ -101,7 +108,7 @@ const statusColor = computed(() => {
 })
 
 const statusLabel = computed(() => {
-  switch (userStatus.value) {
+  switch (chat.userStatus.value) {
     case 'online': return 'Active'
     case 'away': return 'Away'
     case 'busy': return 'Busy'

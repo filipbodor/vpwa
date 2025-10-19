@@ -47,14 +47,6 @@
             class="channel-icon"
           />
           <span class="channel-name">{{ ch.name }}</span>
-          <q-badge
-            v-if="ch.invited"
-            color="amber-6"
-            text-color="black"
-            class="invited-badge"
-          >
-            invited
-          </q-badge>
         </div>
         <div class="channel-actions" v-if="isOwner(ch)">
           <q-btn
