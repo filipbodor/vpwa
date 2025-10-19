@@ -6,7 +6,10 @@
         <q-icon :name="dm.icon || 'person'" size="36px" />
       </q-item-section>
       <q-item-section>
-        <q-item-label>{{ dm.name }}</q-item-label>
+        <div class="row items-center justify-between">
+          <q-item-label>{{ dm.name }}</q-item-label>
+          <DMStatus :status="dm.status || 'offline'" />
+        </div>
         <q-item-label caption>{{ dm.last_message }}</q-item-label>
       </q-item-section>
     </q-item>
@@ -15,6 +18,7 @@
 
 <script setup lang="ts">
 import type { DirectMessage } from 'src/models/DirectMessage'
+import DMStatus from 'src/components/chat-container/sidebar/DMStatus.vue'
 
 defineProps<{ dms: DirectMessage[] }>()
 defineEmits(['open'])

@@ -7,6 +7,7 @@ export type MessageModel = { id: string; sender: string; text: string; createdAt
 export type ThreadId = { kind: ChatKind; id: string }
 
 const currentUserId = 'me'
+export const userStatus = ref<'online' | 'away' | 'busy' | 'offline'>('online')
 
 const channels = ref<Channel[]>([
   { id: 'general', name: 'general', description: 'General chat', isPrivate: false, ownerId: currentUserId, members: [currentUserId], lastActiveAt: Date.now() },
@@ -14,8 +15,8 @@ const channels = ref<Channel[]>([
 ])
 
 const dms = ref<DirectMessage[]>([
-  { id: 'dm-alice', name: 'Alice', last_message: 'Hey there!', icon: 'face' },
-  { id: 'dm-bob', name: 'Bob', last_message: 'Hello!' },
+  { id: 'dm-alice', name: 'Alice', last_message: 'Hey there!', icon: 'face', status: 'online' },
+  { id: 'dm-bob', name: 'Bob', last_message: 'Hello!', status: 'busy' },
 ])
 
 const messagesByThread = ref<Record<string, MessageModel[]>>({
