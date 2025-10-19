@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import SignupForm from 'src/components/SignupForm.vue'
+import SignupForm from 'src/components/authentification/signup/SignupForm.vue'
 </script>
