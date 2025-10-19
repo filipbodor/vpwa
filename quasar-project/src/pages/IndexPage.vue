@@ -1,6 +1,6 @@
 <template>
   <ChatContainer>
-    <template #title>
+    <template #title> //todo
       Tu bude meno aktuálneho chatu a ak nebude žiaden otvorený tak názov apky
     </template>
   </ChatContainer>

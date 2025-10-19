@@ -4,12 +4,21 @@
     :type="inputType"
     :label="label"
     outlined
-    class="q-mb-md"
+    class="auth-input"
     :rules="rules"
-    :append-icon="isPassword ? (showPassword ? 'visibility_off' : 'visibility') : undefined"
-    @click:append="togglePassword"
+    bg-color="white"
+    label-color="grey-7"
+    color="primary"
     @update:model-value="onUpdate"
-  />
+  >
+    <template v-slot:append v-if="isPassword">
+      <q-icon
+        :name="showPassword ? 'visibility_off' : 'visibility'"
+        class="cursor-pointer"
+        @click="togglePassword"
+      />
+    </template>
+  </q-input>
 </template>
 
 <script setup lang="ts">
@@ -40,5 +49,21 @@ function onUpdate(v: string | number | null) {
   emit('update:modelValue', v == null ? '' : String(v))
 }
 </script>
+
+<style scoped>
+.auth-input :deep(.q-field__control) {
+  border-radius: 6px;
+  min-height: 50px;
+}
+
+.auth-input :deep(.q-field__native) {
+  font-size: 15px;
+  padding: 12px 16px;
+}
+
+.auth-input :deep(.q-field__label) {
+  font-size: 15px;
+}
+</style>
 
 
