@@ -1,8 +1,9 @@
 <template>
-  <div class="row items-center q-gutter-sm">
-    <q-badge :color="color" rounded />
-    <span class="text-caption">{{ label }}</span>
-  </div>
+  <q-badge
+    :color="color"
+    rounded
+    class="status-indicator"
+  />
 </template>
 
 <script setup lang="ts">
@@ -16,8 +17,15 @@ const color = ((): string => {
     default: return 'grey-5'
   }
 })()
-
-const label = ((): string => props.status)()
 </script>
+
+<style scoped>
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 2px solid white;
+}
+</style>
 
 
