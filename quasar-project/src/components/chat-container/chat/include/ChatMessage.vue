@@ -91,7 +91,18 @@ async function loadMoreMessages(index: number, done: (stop?: boolean) => void) {
 // Scroll to bottom on mount
 onMounted(async () => {
   await nextTick()
-  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+
+  // Scroll to bottom when chat first loads
+  const container = chatContainer.value
+  if (container) {
+    container.scrollTop = container.scrollHeight
+  }
+
+  // Quasar Infinite Scroll with `reverse`
+  // starts from the "top", so we manually trigger a fake scroll
+  // to make it realize we're already at the bottom
+  await nextTick()
+  container?.dispatchEvent(new Event('scroll'))
 })
 
 // Format timestamp
