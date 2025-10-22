@@ -1,10 +1,9 @@
 export interface Channel {
   id: string
   name: string
-  description?: string | undefined
+  description?: string
   isPrivate: boolean
   ownerId: string
-  members: string[]
-  invited?: boolean | undefined
+  memberIds: string[]
   lastActiveAt: number
 }

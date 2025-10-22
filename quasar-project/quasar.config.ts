@@ -13,7 +13,8 @@ export default defineConfig((/* ctx */) => {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      'quasar-icons', // <-- add the boot file here
+      'pinia',
+      'quasar-icons',
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css

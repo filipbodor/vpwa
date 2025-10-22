@@ -24,22 +24,22 @@
 
       <div class="sidebar-scroll">
         <ChannelList
-          :channels="controller.channelViews.value"
-          :current-user-id="'me'"
-          @open="(ch) => controller.openChannel(String(ch.id))"
+          :channels="chat.channels.value"
+          :current-user-id="chat.currentUserId.value"
+          @open="handleOpenChannel"
           @create="showCreate = true"
-          @leave="(ch) => controller.leaveChannel(String(ch.id))"
-          @delete="(ch) => controller.deleteChannel(String(ch.id))"
-          @refresh="onRefreshChannels"
+          @leave="handleLeaveChannel"
+          @delete="handleDeleteChannel"
+          @refresh="handleRefreshChannels"
         />
 
-        <DMList :dms="controller.dmViews.value" @open="(dm) => controller.openDM(String(dm.id))" />
+        <DMList :dms="chat.directMessages.value" @open="handleOpenDM" />
       </div>
 
       <UserBar />
     </div>
 
-    <CreateChannelDialog v-model="showCreate" @create="onCreateConfirmed" />
+    <CreateChannelDialog v-model="showCreate" @create="handleCreateChannel" />
   </q-drawer>
 </template>
 
@@ -49,8 +49,7 @@ import UserBar from 'src/components/chat-container/sidebar/UserBar.vue'
 import ChannelList from 'src/components/chat-container/sidebar/ChannelList.vue'
 import DMList from 'src/components/chat-container/sidebar/DMList.vue'
 import CreateChannelDialog from 'src/components/chat-container/sidebar/CreateChannelDialog.vue'
-import { useChatController } from 'src/modules/chatController'
-import type { Channel } from 'src/models/Channel'
+import { useChat } from 'src/composables'
 
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: boolean): void }>()
@@ -60,14 +59,42 @@ const open = computed({
   set: (v: boolean) => emit('update:modelValue', v)
 })
 
-const controller = useChatController()
+const chat = useChat()
 const showCreate = ref(false)
-function onCreateConfirmed(payload: { name: string; description?: string | undefined; isPrivate: boolean }) {
-  controller.createChannel({ name: payload.name, description: payload.description, isPrivate: payload.isPrivate })
+
+async function handleCreateChannel(payload: { name: string; description?: string | undefined; isPrivate: boolean }) {
+  try {
+    const channelData = {
+      name: payload.name,
+      isPrivate: payload.isPrivate,
+      ...(payload.description && { description: payload.description })
+    }
+    await chat.createChannel(channelData)
+    showCreate.value = false
+  } catch (error) {
+    console.error('Failed to create channel:', error)
+  }
 }
-function onLeaveChannel(ch: Channel) { controller.leaveChannel(String(ch.id)) }
-function onDeleteChannel(ch: Channel) { controller.deleteChannel(String(ch.id)) }
-function onRefreshChannels() {}
+
+async function handleOpenChannel(ch: { id: string }) {
+  await chat.openChannel(ch.id)
+}
+
+async function handleLeaveChannel(ch: { id: string }) {
+  await chat.leaveChannel(ch.id)
+}
+
+async function handleDeleteChannel(ch: { id: string }) {
+  await chat.deleteChannel(ch.id)
+}
+
+async function handleOpenDM(dm: { id: string }) {
+  await chat.openDM(dm.id)
+}
+
+function handleRefreshChannels() {
+  // Could add refresh logic here if needed
+}
 </script>
 
 <style scoped>

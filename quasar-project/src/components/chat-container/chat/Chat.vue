@@ -2,7 +2,7 @@
 <template>
   <q-page class="chat-page column">
     <ChatMessage :messages="messages" />
-    <ChatInput @send="sendMessage" />
+    <ChatInput @send="handleSendMessage" />
   </q-page>
 </template>
 
@@ -10,29 +10,40 @@
 import { computed } from 'vue'
 import ChatMessage from 'src/components/chat-container/chat/include/ChatMessage.vue'
 import ChatInput from 'src/components/chat-container/chat/include/ChatInput.vue'
-import { useChatController } from 'src/modules/chatController'
-import { useCommandController } from 'src/modules/commandController'
+import { useChat, useCommands } from 'src/composables'
 import { Notify } from 'quasar'
 
-const controller = useChatController()
-const commands = useCommandController()
-const messages = computed<{ sender: string; text: string }[]>(() =>
-  controller.activeMessages.value.map((m) => ({ sender: m.sender, text: m.text }))
+const chat = useChat()
+const commands = useCommands()
+
+const messages = computed(() =>
+  chat.activeMessages.value.map((m) => ({
+    sender: m.senderName,
+    text: m.text,
+    avatar: m.senderAvatar,
+    timestamp: m.createdAt,
+  }))
 )
 
-function sendMessage(text: string) {
+async function handleSendMessage(text: string) {
   const raw = text.trim()
   if (!raw) return
+  
   if (raw.startsWith('/')) {
-    const res = commands.handle(raw)
-    if (res.ok) {
+    const res = await commands.handleCommand(raw)
+    if (res.success) {
       if (res.message) Notify.create({ message: res.message, color: 'positive' })
     } else {
-      Notify.create({ message: res.error, color: 'negative' })
+      Notify.create({ message: res.error || 'Command failed', color: 'negative' })
     }
     return
   }
-  controller.sendMessage(raw)
+  
+  try {
+    await chat.sendMessage(raw)
+  } catch (error) {
+    Notify.create({ message: 'Failed to send message', color: 'negative' })
+  }
 }
 </script>
 
