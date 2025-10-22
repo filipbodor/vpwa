@@ -1,4 +1,3 @@
-<!-- src/components/ChatInput.vue -->
 <template>
   <div class="chat-footer">
     <div class="chat-input-wrapper">
@@ -8,39 +7,15 @@
         outlined
         dense
         placeholder="Message..."
-        @keyup.enter="send"
         bg-color="white"
+        @keyup.enter.prevent="sendMessage"
       >
         <template v-slot:prepend>
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            icon="add_circle_outline"
-            color="grey-7"
-            class="q-mr-xs"
-          />
+          <q-btn flat dense round size="sm" icon="add_circle_outline" color="grey-7" class="q-mr-xs" />
         </template>
         <template v-slot:append>
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            icon="sentiment_satisfied_alt"
-            color="grey-7"
-            class="q-mr-xs"
-          />
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            icon="alternate_email"
-            color="grey-7"
-            class="q-mr-xs"
-          />
+          <q-btn flat dense round size="sm" icon="sentiment_satisfied_alt" color="grey-7" class="q-mr-xs" />
+          <q-btn flat dense round size="sm" icon="alternate_email" color="grey-7" class="q-mr-xs" />
           <q-btn
             flat
             dense
@@ -48,7 +23,7 @@
             size="sm"
             icon="send"
             color="primary"
-            @click="send"
+            @click="sendMessage"
             :disable="!text.trim()"
           />
         </template>
@@ -66,9 +41,11 @@ const emit = defineEmits<{
 
 const text = ref('')
 
-function send() {
-  if (!text.value.trim()) return
-  emit('send', text.value)
+function sendMessage() {
+  const value = text.value.trim()
+  if (!value) return
+  console.log('sendMessage called', value, new Date().toISOString())
+  emit('send', value)
   text.value = ''
 }
 </script>

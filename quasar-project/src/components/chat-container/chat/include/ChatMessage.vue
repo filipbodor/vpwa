@@ -1,11 +1,16 @@
 <template>
-  <div class="chat-messages scroll" ref="chatContainer">
-    <div class="messages-container">
+  <div class="chat-messages scroll q-pa-md" ref="chatContainer">
+    <q-infinite-scroll
+      :offset="50"
+      @load="loadMoreMessages"
+      scroll-target="chatContainer"
+      reverse
+    >
       <div
-        v-for="(msg, index) in messages"
-        :key="index"
+        v-for="(msg, index) in displayedMessages"
+        :key="msg.id || index"
         class="message-wrapper"
-        :class="{ 'message-sent': msg.senderId === 'user-1' }"
+        :class="{ 'message-sent': msg.senderId === CURRENT_USER_ID }"
       >
         <div class="message-avatar">
           <q-avatar size="36px" color="primary" text-color="white">
@@ -17,51 +22,102 @@
             <span class="message-sender">{{ msg.sender }}</span>
             <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
           </div>
-          <div class="message-bubble" :class="{ 'message-bubble-sent': msg.senderId === 'user-1' }">
+          <div
+            class="message-bubble"
+            :class="{ 'message-bubble-sent': msg.senderId === CURRENT_USER_ID }"
+          >
             {{ msg.text }}
           </div>
         </div>
       </div>
-    </div>
+
+      <template v-slot:loading>
+        <div class="row justify-center q-my-md">
+          <q-spinner-dots color="primary" size="40px" />
+        </div>
+      </template>
+    </q-infinite-scroll>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch, onMounted } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
+import { CURRENT_USER_ID } from 'src/services/mock/mockData'
 
 const props = defineProps<{
-  messages: { senderId: string; sender: string; text: string; timestamp?: number }[]
+  messages: { id?: string; senderId: string; sender: string; text: string; timestamp?: number }[]
 }>()
 
 const chatContainer = ref<HTMLElement | null>(null)
+const loading = ref(false)
 
-// Scroll whenever messages change
+// How many messages to load per batch
+const BATCH_SIZE = 20
+
+// Start with last BATCH_SIZE messages
+const displayedMessages = ref(
+  props.messages.slice(-BATCH_SIZE)
+)
+
+// Prepend older messages as you scroll up
+async function loadMoreMessages(index: number, done: (stop?: boolean) => void) {
+  if (loading.value) {
+    done(true)
+    return
+  }
+  loading.value = true
+
+  // simulate fetching older messages
+  await new Promise(r => setTimeout(r, 500))
+
+  const alreadyLoaded = displayedMessages.value.length
+  const totalMessages = props.messages.length
+
+  if (alreadyLoaded >= totalMessages) {
+    // No more messages
+    done(true)
+  } else {
+    // Get older batch
+    const start = Math.max(0, totalMessages - alreadyLoaded - BATCH_SIZE)
+    const end = totalMessages - alreadyLoaded
+    const olderBatch = props.messages.slice(start, end)
+    displayedMessages.value.unshift(...olderBatch)
+    done()
+  }
+
+  loading.value = false
+}
+
+// Scroll to bottom on mount
+onMounted(async () => {
+  await nextTick()
+  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+})
+
+// Format timestamp
+function formatTime(ts?: number) {
+  if (!ts) return ''
+  return new Date(ts).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+// Watch props.messages in case new messages are added at the bottom
 watch(
   () => props.messages,
   async () => {
     await nextTick()
-    scrollToBottom()
+    // Append new messages at the bottom
+    const newMessages = props.messages.slice(displayedMessages.value.length)
+    displayedMessages.value.push(...newMessages)
+    if (chatContainer.value) {
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+    }
   },
   { deep: true }
 )
-
-// Initial scroll after component mounted
-onMounted(async () => {
-  await nextTick()
-  scrollToBottom()
-})
-
-function scrollToBottom() {
-  if (chatContainer.value) {
-    chatContainer.value.scrollTop = chatContainer.value.scrollHeight
-  }
-}
-
-function formatTime(ts?: number) {
-  if (!ts) return ''
-  const date = new Date(ts)
-  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-}
 </script>
 
 <style scoped>
