@@ -1,4 +1,4 @@
-import { useAuthStore, useChannelStore, useChatStore, useUserStore } from 'src/stores'
+import { useAuthStore, useChannelStore, useChatStore, useUserStore } from 'src/stores/pinia-stores'
 
 export function useCommands() {
   const authStore = useAuthStore()

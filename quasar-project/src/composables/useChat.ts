@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useAuthStore, useChannelStore, useChatStore, useMessageStore, useUserStore } from 'src/stores'
+import { useAuthStore, useChannelStore, useChatStore, useMessageStore, useUserStore } from 'src/stores/pinia-stores'
 import type { Thread } from 'src/models'
 
 export function useChat() {
