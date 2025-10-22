@@ -5,19 +5,19 @@
         v-for="(msg, index) in messages"
         :key="index"
         class="message-wrapper"
-        :class="{ 'message-sent': msg.sender === 'me' }"
+        :class="{ 'message-sent': msg.senderId === 'user-1' }"
       >
-        <div class="message-avatar" v-if="msg.sender !== 'me'">
+        <div class="message-avatar">
           <q-avatar size="36px" color="primary" text-color="white">
             {{ msg.sender.charAt(0).toUpperCase() }}
           </q-avatar>
         </div>
         <div class="message-content">
-          <div class="message-header" v-if="msg.sender !== 'me'">
+          <div class="message-header">
             <span class="message-sender">{{ msg.sender }}</span>
-            <span class="message-time">{{ formatTime(new Date()) }}</span>
+            <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
           </div>
-          <div class="message-bubble" :class="{ 'message-bubble-sent': msg.sender === 'me' }">
+          <div class="message-bubble" :class="{ 'message-bubble-sent': msg.senderId === 'user-1' }">
             {{ msg.text }}
           </div>
         </div>
@@ -30,7 +30,7 @@
 import { ref, nextTick, watch, onMounted } from 'vue'
 
 const props = defineProps<{
-  messages: { sender: string; text: string }[]
+  messages: { senderId: string; sender: string; text: string; timestamp?: number }[]
 }>()
 
 const chatContainer = ref<HTMLElement | null>(null)
@@ -57,7 +57,9 @@ function scrollToBottom() {
   }
 }
 
-function formatTime(date: Date) {
+function formatTime(ts?: number) {
+  if (!ts) return ''
+  const date = new Date(ts)
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 </script>

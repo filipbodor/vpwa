@@ -1,4 +1,3 @@
-<!-- src/pages/Chat.vue -->
 <template>
   <q-page class="chat-page column">
     <ChatMessage :messages="messages" />
@@ -12,12 +11,15 @@ import ChatMessage from 'src/components/chat-container/chat/include/ChatMessage.
 import ChatInput from 'src/components/chat-container/chat/include/ChatInput.vue'
 import { useChat, useCommands } from 'src/composables'
 import { Notify } from 'quasar'
+import { CURRENT_USER_ID } from 'src/services/mock/mockData'
 
 const chat = useChat()
 const commands = useCommands()
 
+// Map active messages and include senderId
 const messages = computed(() =>
   chat.activeMessages.value.map((m) => ({
+    senderId: m.senderId,
     sender: m.senderName,
     text: m.text,
     avatar: m.senderAvatar,
@@ -28,7 +30,7 @@ const messages = computed(() =>
 async function handleSendMessage(text: string) {
   const raw = text.trim()
   if (!raw) return
-  
+
   if (raw.startsWith('/')) {
     const res = await commands.handleCommand(raw)
     if (res.success) {
@@ -38,7 +40,7 @@ async function handleSendMessage(text: string) {
     }
     return
   }
-  
+
   try {
     await chat.sendMessage(raw)
   } catch (error) {
@@ -56,5 +58,3 @@ async function handleSendMessage(text: string) {
   padding: 0;
 }
 </style>
-
-
