@@ -1,8 +1,8 @@
 <template>
   <q-item clickable>
-    <q-item-section avatar>
-      <q-icon :name="'person' || props.icon" size="36px" />
-    </q-item-section>
+  <q-item-section avatar>
+    <q-icon :name="chatContact.icon || 'person'" size="36px" />
+  </q-item-section>
 
     <q-item-section>
       <q-item-label>{{ chatContact.name }}</q-item-label>
@@ -13,13 +13,6 @@
 </template>
 <!-- eslint-disable vue/block-lang -->
 
-<script setup>
-const chatContact = defineProps({
-  icon: String,
-  name: {
-    type: String,
-    required: true,
-  },
-  last_message: String,
-});
+<script setup lang="ts">
+const chatContact = defineProps<{ icon?: string | undefined; name: string; last_message?: string | undefined }>()
 </script>

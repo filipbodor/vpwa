@@ -1,39 +1,11 @@
-<!-- src/pages/ChatPage.vue -->
 <template>
-  <q-page class="chat-page column">
-    <ChatMessage :messages="messages" />
-    <ChatInput @send="sendMessage" />
-  </q-page>
+  <ChatContainer>
+    <template #title> //todo
+      Tu bude meno aktuálneho chatu a ak nebude žiaden otvorený tak názov apky
+    </template>
+  </ChatContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import ChatMessage from 'src/components/ChatMessage.vue'
-import ChatInput from 'src/components/ChatInput.vue'
-import messagesData from 'src/assets/messages.json'
-
-const messages = ref<{ sender: string; text: string }[]>([])
-
-onMounted(() => {
-  const repeatTimes = 200
-  const repeatedMessages: { sender: string; text: string }[] = []
-  for (let i = 0; i < repeatTimes; i++) {
-    repeatedMessages.push(...messagesData)
-  }
-  messages.value = repeatedMessages
-})
-
-function sendMessage(text: string) {
-  messages.value.push({ sender: 'me', text })
-}
+import ChatContainer from 'src/components/chat-container/ChatContainer.vue'
 </script>
-
-<style scoped>
-.chat-page {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-</style>
