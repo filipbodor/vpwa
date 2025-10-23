@@ -23,7 +23,7 @@
             size="sm"
             icon="send"
             color="primary"
-            @click="sendMessage"
+            @click="handleSend"
             :disable="!text.trim()"
           />
         </template>
@@ -34,6 +34,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
 
 const emit = defineEmits<{
   (e: 'send', message: string): void
@@ -41,12 +44,30 @@ const emit = defineEmits<{
 
 const text = ref('')
 
-function sendMessage() {
+function handleSend() {
   const value = text.value.trim()
   if (!value) return
-  console.log('sendMessage called', value, new Date().toISOString())
-  emit('send', value)
+
+  sendMessage(value)
+  showNotif(value)
+
   text.value = ''
+}
+
+function sendMessage(message: string) {
+  console.log('sendMessage called', message, new Date().toISOString())
+  emit('send', message)
+}
+
+function showNotif(message: string) {
+  $q.notify({
+    message,
+    caption: 'You sent this just now',
+    color: 'primary',
+    position: 'top-right',
+    avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
+    timeout: 2000
+  })
 }
 </script>
 
