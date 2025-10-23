@@ -116,16 +116,28 @@ function formatTime(ts?: number) {
 }
 
 // Watch props.messages in case new messages are added at the bottom
+const currentChatKey = ref('')
+
 watch(
   () => props.messages,
-  async () => {
+  async (newMessages, oldMessages) => {
     await nextTick()
-    // Append new messages at the bottom
-    const newMessages = props.messages.slice(displayedMessages.value.length)
-    displayedMessages.value.push(...newMessages)
-    if (chatContainer.value) {
-      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+
+    const newKey = JSON.stringify(newMessages.map(m => m.id))
+    if (newKey !== currentChatKey.value) {
+      // new chat: reset displayed messages
+      displayedMessages.value = newMessages.slice(-BATCH_SIZE)
+      currentChatKey.value = newKey
+    } else {
+      // same chat: append new messages
+      const newCount = newMessages.length - (oldMessages?.length || 0)
+      if (newCount > 0) {
+        displayedMessages.value.push(...newMessages.slice(-newCount))
+      }
     }
+
+    // Scroll to bottom
+    chatContainer.value?.scrollTo({ top: chatContainer.value.scrollHeight })
   },
   { deep: true }
 )
