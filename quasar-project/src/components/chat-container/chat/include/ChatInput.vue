@@ -61,13 +61,17 @@ function sendMessage(message: string) {
 
 function showNotif(message: string) {
   $q.notify({
-    message,
-    caption: 'You sent this just now',
-    color: 'primary',
-    position: 'top-right',
-    avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
-    timeout: 2000
-  })
+  message,
+  caption: 'You sent this just now',
+  classes: 'my-slack-notif',
+  position: 'top-right',
+  avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
+  timeout: 2500,
+  progress: true,      
+  actions: [
+    { icon: 'close', color: 'white', handler: () => {} }
+  ]
+})
 }
 </script>
 
@@ -106,4 +110,5 @@ function showNotif(message: string) {
   padding: 8px 4px;
   font-size: 15px;
 }
+
 </style>

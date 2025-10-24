@@ -27,4 +27,9 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
-
+.my-slack-notif {
+  background-color: #611f69 !important;
+  color: white !important;               
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
