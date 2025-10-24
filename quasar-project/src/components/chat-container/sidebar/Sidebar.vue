@@ -7,6 +7,7 @@
     :width="260"
   >
     <div class="sidebar-content">
+      <!-- Workspace header -->
       <div class="workspace-header">
         <div class="workspace-name">Workspace</div>
         <q-btn
@@ -22,10 +23,12 @@
         </q-btn>
       </div>
 
+      <!-- Channels and DMs scrollable area -->
       <div class="sidebar-scroll">
         <ChannelList
           :channels="chat.channels.value"
           :current-user-id="chat.currentUserId.value"
+          :current-channel-id="activeChannelId"
           @open="handleOpenChannel"
           @create="showCreate = true"
           @leave="handleLeaveChannel"
@@ -33,7 +36,11 @@
           @refresh="handleRefreshChannels"
         />
 
-        <DMList :dms="chat.directMessages.value" @open="handleOpenDM" />
+        <DMList
+          :dms="chat.directMessages.value"
+          :current-dm-id="activeDMId"
+          @open="handleOpenDM"
+        />
       </div>
 
       <UserBar />
@@ -54,6 +61,7 @@ import { useChat } from 'src/composables'
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: boolean): void }>()
 
+// Drawer open state
 const open = computed({
   get: () => props.modelValue,
   set: (v: boolean) => emit('update:modelValue', v)
@@ -62,6 +70,11 @@ const open = computed({
 const chat = useChat()
 const showCreate = ref(false)
 
+// IDs for active channel/DM (TypeScript-safe)
+const activeChannelId = ref<string>('') // empty string when none selected
+const activeDMId = ref<string>('')
+
+// Create channel handler
 async function handleCreateChannel(payload: { name: string; description?: string | undefined; isPrivate: boolean }) {
   try {
     const channelData = {
@@ -76,28 +89,36 @@ async function handleCreateChannel(payload: { name: string; description?: string
   }
 }
 
+// Channel actions
 async function handleOpenChannel(ch: { id: string }) {
+  activeChannelId.value = ch.id
   await chat.openChannel(ch.id)
 }
 
 async function handleLeaveChannel(ch: { id: string }) {
   await chat.leaveChannel(ch.id)
+  if (activeChannelId.value === ch.id) activeChannelId.value = ''
 }
 
 async function handleDeleteChannel(ch: { id: string }) {
   await chat.deleteChannel(ch.id)
+  if (activeChannelId.value === ch.id) activeChannelId.value = ''
 }
 
+// DM actions
 async function handleOpenDM(dm: { id: string }) {
+  activeDMId.value = dm.id
   await chat.openDM(dm.id)
 }
 
+// Optional: refresh channels
 function handleRefreshChannels() {
-  // Could add refresh logic here if needed
+  // Add refresh logic if needed
 }
 </script>
 
 <style scoped>
+/* === Sidebar container === */
 .sidebar-drawer {
   background: #ffffff;
 }
@@ -144,6 +165,11 @@ function handleRefreshChannels() {
   overflow-y: auto;
   padding: 16px 0;
 }
+
+/* === Active channel/DM === */
+.channel-name.active,
+.dm-name.active {
+  font-weight: 700;
+  color: #611f69;
+}
 </style>
-
-
