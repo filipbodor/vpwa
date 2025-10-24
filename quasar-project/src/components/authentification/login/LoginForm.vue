@@ -19,6 +19,7 @@
             type="email"
             label="Email address"
             :rules="[(v) => !!v || 'Email is required']"
+
           />
         </div>
         <div class="q-mb-md">
@@ -53,7 +54,7 @@
       </div>
 
       <q-separator class="q-my-lg" />
-      
+
       <div class="signup-section text-center">
         <div class="q-mb-sm text-body2 text-grey-7">Don't have an account?</div>
         <q-btn

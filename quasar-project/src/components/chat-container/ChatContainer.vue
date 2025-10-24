@@ -12,7 +12,7 @@
       <Chat />
     </q-page-container>
   </q-layout>
-  
+
 </template>
 
 <script setup>

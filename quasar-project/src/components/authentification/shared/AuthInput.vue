@@ -1,6 +1,6 @@
 <template>
   <q-input
-    :model-value="modelValue"
+    v-model="internalValue"
     :type="inputType"
     :label="label"
     outlined
@@ -9,7 +9,6 @@
     bg-color="white"
     label-color="grey-7"
     color="primary"
-    @update:model-value="onUpdate"
   >
     <template v-slot:append v-if="isPassword">
       <q-icon
@@ -22,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { ValidationRule } from 'quasar'
 
 const props = defineProps<{
@@ -36,34 +35,20 @@ const emit = defineEmits<{ (e: 'update:modelValue', v: string): void }>()
 
 const isPassword = computed(() => (props.type ?? 'text') === 'password')
 const showPassword = ref(false)
-const inputType = computed(() => {
-  if (!isPassword.value) return props.type ?? 'text'
-  return showPassword.value ? 'text' : 'password'
-})
+const inputType = computed(() => (isPassword.value && showPassword.value ? 'text' : props.type ?? 'text'))
+
+const internalValue = ref(props.modelValue)
+watch(() => props.modelValue, val => internalValue.value = val)
+watch(internalValue, val => emit('update:modelValue', val))
 
 function togglePassword() {
   if (isPassword.value) showPassword.value = !showPassword.value
 }
-
-function onUpdate(v: string | number | null) {
-  emit('update:modelValue', v == null ? '' : String(v))
-}
 </script>
 
 <style scoped>
-.auth-input :deep(.q-field__control) {
-  border-radius: 6px;
-  min-height: 50px;
-}
-
-.auth-input :deep(.q-field__native) {
-  font-size: 15px;
-  padding: 12px 16px;
-}
-
-.auth-input :deep(.q-field__label) {
-  font-size: 15px;
+/* Keep it minimal: no forced padding or height */
+.auth-input {
+  width: 100%;
 }
 </style>
-
-
