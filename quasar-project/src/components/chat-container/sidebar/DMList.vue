@@ -34,7 +34,7 @@
           <DMStatus :status="dm.status || 'offline'" class="dm-status" />
         </div>
         <div class="dm-content">
-          <span class="dm-name">{{ dm.name }}</span>
+          <span :class="['dm-name', { active: dm.id === currentDmId }]">{{ dm.name }}</span>
         </div>
       </div>
     </div>
@@ -54,7 +54,10 @@ interface DMView {
   icon?: string
 }
 
-defineProps<{ dms: DMView[] }>()
+defineProps<{ 
+  dms: DMView[]
+  currentDmId?: string
+}>()
 defineEmits(['open'])
 </script>
 
@@ -148,6 +151,12 @@ defineEmits(['open'])
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Highlight active DM */
+.dm-name.active {
+  font-weight: 700;
+  color: #611f69;
 }
 </style>
 
