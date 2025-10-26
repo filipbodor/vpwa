@@ -15,11 +15,10 @@
       <q-form ref="loginForm" @submit.prevent="submitForm">
         <div class="q-mb-md">
           <AuthInput
-            v-model="email"
-            type="email"
-            label="Email address"
-            :rules="[(v) => !!v || 'Email is required']"
-
+            v-model="emailOrUsername"
+            label="Email or Username"
+            :rules="[(v) => !!v || 'Email or Username is required']"
+            hint="You can use your email or username to sign in"
           />
         </div>
         <div class="q-mb-md">
@@ -81,7 +80,7 @@ import AuthInput from 'src/components/authentification/shared/AuthInput.vue'
 const router = useRouter()
 const loginForm = ref<QForm | null>(null)
 
-const email = ref('')
+const emailOrUsername = ref('')
 const password = ref('')
 const showPassword = ref(false)
 

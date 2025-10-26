@@ -1,8 +1,8 @@
 <template>
   <div class="channel-list">
     <div class="section-header">
-      <div class="section-title">
-        <q-icon name="expand_more" size="18px" class="q-mr-xs" />
+      <div class="section-title" @click="expanded = !expanded">
+        <q-icon :name="expanded ? 'expand_more' : 'chevron_right'" size="18px" class="q-mr-xs expand-icon" />
         <span>Channels</span>
       </div>
       <div class="section-actions">
@@ -13,7 +13,7 @@
           size="sm"
           icon="refresh"
           color="grey-6"
-          @click="$emit('refresh')"
+          @click.stop="$emit('refresh')"
           class="header-btn"
         >
           <q-tooltip>Refresh channels</q-tooltip>
@@ -25,7 +25,7 @@
           size="sm"
           icon="add"
           color="grey-6"
-          @click="$emit('create')"
+          @click.stop="$emit('create')"
           class="header-btn"
         >
           <q-tooltip>Create channel</q-tooltip>
@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    <div class="channel-items">
+    <div v-show="expanded" class="channel-items">
       <div
         v-for="ch in channels"
         :key="ch.id"
@@ -71,6 +71,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { Channel } from 'src/models/Channel'
 
 const props = defineProps<{
@@ -79,6 +80,8 @@ const props = defineProps<{
   currentChannelId?: string
 }>()
 defineEmits(['open', 'create', 'leave', 'delete', 'refresh'])
+
+const expanded = ref(true)
 
 function isOwner(ch: Channel) {
   return props.currentUserId != null && props.currentUserId === ch.ownerId
@@ -111,6 +114,10 @@ function isOwner(ch: Channel) {
 
 .section-title:hover {
   color: #611f69;
+}
+
+.expand-icon {
+  transition: transform 0.2s ease;
 }
 
 .section-actions {

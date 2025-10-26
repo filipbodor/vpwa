@@ -42,6 +42,10 @@ export const useUserStore = defineStore('users', () => {
     return Array.from(users.value.values()).find(u => u.name.toLowerCase() === name.toLowerCase())
   }
 
-  return { users, isLoading, error, fetchAllUsers, fetchUserById, getUserById, findUserByName }
+  function findUserByUsername(username: string): User | undefined {
+    return Array.from(users.value.values()).find(u => u.username.toLowerCase() === username.toLowerCase())
+  }
+
+  return { users, isLoading, error, fetchAllUsers, fetchUserById, getUserById, findUserByName, findUserByUsername }
 })
 

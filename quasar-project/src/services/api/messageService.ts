@@ -9,7 +9,7 @@ export const messageService = {
   async getMessages(thread: Thread): Promise<Message[]> {
     await delay(100)
     const key = getThreadKey(thread)
-    return mockMessages[key] || []
+    return [...(mockMessages[key] || [])]
   },
 
   async sendMessage(thread: Thread, text: string): Promise<Message> {

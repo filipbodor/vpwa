@@ -13,6 +13,10 @@ import { useChat, useCommands } from 'src/composables'
 import { Notify } from 'quasar'
 import { CURRENT_USER_ID } from 'src/services/mock/mockData'
 
+const emit = defineEmits<{
+  (e: 'open-channel-info'): void
+}>()
+
 const chat = useChat()
 const commands = useCommands()
 
@@ -33,10 +37,16 @@ async function handleSendMessage(text: string) {
   // Command handling
   if (raw.startsWith('/')) {
     const res = await commands.handleCommand(raw)
-    if (res.success && res.message)
-      Notify.create({ message: res.message, color: 'positive' })
-    else
+    if (res.success) {
+
+      if (res.message === 'list_members') {
+        emit('open-channel-info')
+      } else if (res.message) {
+        Notify.create({ message: res.message, color: 'positive' })
+      }
+    } else {
       Notify.create({ message: res.error || 'Command failed', color: 'negative' })
+    }
     return
   }
 

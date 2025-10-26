@@ -32,6 +32,19 @@
 
         <div class="q-mb-md">
           <AuthInput
+            v-model="username"
+            label="Username"
+            :rules="[
+              (v) => !!v || 'Username is required',
+              (v) => v.length >= 3 || 'Username must be at least 3 characters',
+              (v) => /^[a-zA-Z0-9_]+$/.test(v) || 'Username can only contain letters, numbers and underscores'
+            ]"
+            hint="Choose a unique username"
+          />
+        </div>
+
+        <div class="q-mb-md">
+          <AuthInput
             v-model="email"
             type="email"
             label="Email address"
@@ -99,6 +112,7 @@ const signupForm = ref<QForm | null>(null)
 
 const firstName = ref('')
 const lastName = ref('')
+const username = ref('')
 const email = ref('')
 const password = ref('')
 const repeatPassword = ref('')

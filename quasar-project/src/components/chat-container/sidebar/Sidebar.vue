@@ -10,17 +10,6 @@
       <!-- Workspace header -->
       <div class="workspace-header">
         <div class="workspace-name">Workspace</div>
-        <q-btn
-          flat
-          dense
-          round
-          size="sm"
-          icon="edit"
-          color="white"
-          class="workspace-btn"
-        >
-          <q-tooltip>Compose</q-tooltip>
-        </q-btn>
       </div>
 
       <!-- Channels and DMs scrollable area -->
@@ -92,6 +81,7 @@ async function handleCreateChannel(payload: { name: string; description?: string
 // Channel actions
 async function handleOpenChannel(ch: { id: string }) {
   activeChannelId.value = ch.id
+  activeDMId.value = '' // Clear DM selection when opening channel
   await chat.openChannel(ch.id)
 }
 
@@ -108,6 +98,7 @@ async function handleDeleteChannel(ch: { id: string }) {
 // DM actions
 async function handleOpenDM(dm: { id: string }) {
   activeDMId.value = dm.id
+  activeChannelId.value = '' // Clear channel selection when opening DM
   await chat.openDM(dm.id)
 }
 

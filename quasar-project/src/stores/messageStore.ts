@@ -38,9 +38,7 @@ export const useMessageStore = defineStore('messages', () => {
     error.value = null
     try {
       const newMessage = await messageService.sendMessage(thread, text)
-      const messages = messagesByThread.value.get(key) || []
-      messages.push(newMessage)
-      messagesByThread.value.set(key, messages)
+      await fetchMessages(thread)
       return newMessage
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to send message'
