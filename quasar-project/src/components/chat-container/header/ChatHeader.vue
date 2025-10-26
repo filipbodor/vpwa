@@ -21,15 +21,7 @@
       
       <div class="toolbar-actions">
         <q-btn
-          flat
-          dense
-          round
-          icon="search"
-          class="action-btn"
-        >
-          <q-tooltip>Search</q-tooltip>
-        </q-btn>
-        <q-btn
+          v-if="chat.activeThread.value?.type === 'channel'"
           flat
           dense
           round
@@ -39,7 +31,7 @@
         >
           <q-tooltip>Channel details</q-tooltip>
         </q-btn>
-        <q-separator vertical inset class="q-mx-sm" />
+        <q-separator v-if="chat.activeThread.value?.type === 'channel'" vertical inset class="q-mx-sm" />
         <LogOutBtn />
       </div>
     </q-toolbar>

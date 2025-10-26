@@ -10,17 +10,6 @@
       <!-- Workspace header -->
       <div class="workspace-header">
         <div class="workspace-name">Workspace</div>
-        <q-btn
-          flat
-          dense
-          round
-          size="sm"
-          icon="edit"
-          color="white"
-          class="workspace-btn"
-        >
-          <q-tooltip>Compose</q-tooltip>
-        </q-btn>
       </div>
 
       <!-- Channels and DMs scrollable area -->
