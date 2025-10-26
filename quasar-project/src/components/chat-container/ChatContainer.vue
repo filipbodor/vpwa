@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf" class="no-overflow">
-    <ChatHeader @toggle-drawer="toggleLeftDrawer">
+    <ChatHeader ref="chatHeaderRef" @toggle-drawer="toggleLeftDrawer">
       <template #title>
         <slot name="title">Slack 2.0</slot>
       </template>
@@ -9,10 +9,10 @@
     <Sidebar v-model="leftDrawerOpen" />
 
     <q-page-container class="no-overflow">
-      <Chat />
+      <Chat @open-channel-info="openChannelInfo" />
     </q-page-container>
   </q-layout>
-
+  
 </template>
 
 <script setup>
@@ -23,11 +23,19 @@ import { ref, onMounted } from 'vue'
 import { useChat } from 'src/composables'
 import { Notify } from 'quasar'
 
+const chatHeaderRef = ref(null)
+
 const leftDrawerOpen = ref(false)
 const chat = useChat()
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function openChannelInfo() {
+  if (chatHeaderRef.value?.showChannelInfo) {
+    chatHeaderRef.value.showChannelInfo()
+  }
 }
 
 onMounted(async () => {

@@ -35,6 +35,7 @@
           round
           icon="info_outline"
           class="action-btn"
+          @click="showChannelInfo"
         >
           <q-tooltip>Channel details</q-tooltip>
         </q-btn>
@@ -42,12 +43,40 @@
         <LogOutBtn />
       </div>
     </q-toolbar>
+
+    <ChannelInfoModal
+      v-model="channelInfoModalOpen"
+      :channel-info="channelInfo"
+      :users="users"
+    />
   </q-header>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import LogOutBtn from 'src/components/chat-container/header/include/LogOutBtn.vue'
+import ChannelInfoModal from 'src/components/chat-container/header/include/ChannelInfoModal.vue'
+import { useChat } from 'src/composables'
+import { useUserStore } from 'src/stores/pinia-stores'
+
 defineEmits(['toggle-drawer'])
+
+const chat = useChat()
+const userStore = useUserStore()
+
+const channelInfoModalOpen = ref(false)
+
+const channelInfo = computed(() => chat.activeChannelInfo.value)
+const users = computed(() => userStore.users)
+
+function showChannelInfo() {
+  if (chat.activeThread.value?.type === 'channel') {
+    channelInfoModalOpen.value = true
+  }
+}
+
+// Expose the function so it can be called externally (e.g., from commands)
+defineExpose({ showChannelInfo })
 </script>
 
 <style scoped>
