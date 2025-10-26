@@ -7,12 +7,10 @@
     :width="260"
   >
     <div class="sidebar-content">
-      <!-- Workspace header -->
       <div class="workspace-header">
         <div class="workspace-name">Workspace</div>
       </div>
 
-      <!-- Channels and DMs scrollable area -->
       <div class="sidebar-scroll">
         <ChannelList
           :channels="chat.channels.value"
@@ -50,7 +48,6 @@ import { useChat } from 'src/composables'
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: boolean): void }>()
 
-// Drawer open state
 const open = computed({
   get: () => props.modelValue,
   set: (v: boolean) => emit('update:modelValue', v)
@@ -59,11 +56,9 @@ const open = computed({
 const chat = useChat()
 const showCreate = ref(false)
 
-// IDs for active channel/DM (TypeScript-safe)
-const activeChannelId = ref<string>('') // empty string when none selected
+const activeChannelId = ref<string>('')
 const activeDMId = ref<string>('')
 
-// Create channel handler
 async function handleCreateChannel(payload: { name: string; description?: string | undefined; isPrivate: boolean }) {
   try {
     const channelData = {
@@ -81,7 +76,7 @@ async function handleCreateChannel(payload: { name: string; description?: string
 // Channel actions
 async function handleOpenChannel(ch: { id: string }) {
   activeChannelId.value = ch.id
-  activeDMId.value = '' // Clear DM selection when opening channel
+  activeDMId.value = ''
   await chat.openChannel(ch.id)
 }
 
@@ -98,18 +93,15 @@ async function handleDeleteChannel(ch: { id: string }) {
 // DM actions
 async function handleOpenDM(dm: { id: string }) {
   activeDMId.value = dm.id
-  activeChannelId.value = '' // Clear channel selection when opening DM
+  activeChannelId.value = ''
   await chat.openDM(dm.id)
 }
 
-// Optional: refresh channels
 function handleRefreshChannels() {
-  // Add refresh logic if needed
 }
 </script>
 
 <style scoped>
-/* === Sidebar container === */
 .sidebar-drawer {
   background: #ffffff;
 }
@@ -157,7 +149,6 @@ function handleRefreshChannels() {
   padding: 16px 0;
 }
 
-/* === Active channel/DM === */
 .channel-name.active,
 .dm-name.active {
   font-weight: 700;

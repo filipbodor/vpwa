@@ -35,8 +35,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
+import { useAuthStore } from 'src/stores/pinia-stores'
 
 const $q = useQuasar()
+const authStore = useAuthStore()
 
 const emit = defineEmits<{
   (e: 'send', message: string): void
@@ -60,6 +62,13 @@ function sendMessage(message: string) {
 }
 
 function showNotif(message: string) {
+  // Silence notifications if user status is busy or offline
+  const status = authStore.userStatus
+  if (status === 'busy' || status === 'offline') {
+    console.log('[Notification silenced]:', message)
+    return
+  }
+
   $q.notify({
   message,
   caption: 'You sent this just now',
