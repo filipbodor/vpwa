@@ -3,11 +3,11 @@ import type { User, Channel, DirectMessage, Message } from 'src/models'
 export const CURRENT_USER_ID = 'user-1'
 
 export const mockUsers: User[] = [
-  { id: 'user-1', name: 'You', email: 'you@example.com', avatar: '👤', status: 'online' },
-  { id: 'user-2', name: 'Alice Johnson', email: 'alice@example.com', avatar: '👩', status: 'online' },
-  { id: 'user-3', name: 'Bob Smith', email: 'bob@example.com', avatar: '👨', status: 'away' },
-  { id: 'user-4', name: 'Charlie Brown', email: 'charlie@example.com', avatar: '🧑', status: 'busy' },
-  { id: 'user-5', name: 'Diana Prince', email: 'diana@example.com', avatar: '👸', status: 'offline' },
+  { id: 'user-1', name: 'You', username: 'you', email: 'you@example.com', avatar: '👤', status: 'online' },
+  { id: 'user-2', name: 'Alice Johnson', username: 'alice_j', email: 'alice@example.com', avatar: '👩', status: 'online' },
+  { id: 'user-3', name: 'Bob Smith', username: 'bobsmith', email: 'bob@example.com', avatar: '👨', status: 'away' },
+  { id: 'user-4', name: 'Charlie Brown', username: 'charlieb', email: 'charlie@example.com', avatar: '🧑', status: 'busy' },
+  { id: 'user-5', name: 'Diana Prince', username: 'wonderwoman', email: 'diana@example.com', avatar: '👸', status: 'offline' },
 ]
 
 export const mockChannels: Channel[] = [

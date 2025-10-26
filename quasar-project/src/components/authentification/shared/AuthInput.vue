@@ -3,6 +3,7 @@
     v-model="internalValue"
     :type="inputType"
     :label="label"
+    :hint="hint"
     outlined
     class="auth-input"
     :rules="rules"
@@ -29,6 +30,7 @@ const props = defineProps<{
   label: string
   type?: 'text' | 'email' | 'password'
   rules?: ValidationRule[]
+  hint?: string
 }>()
 
 const emit = defineEmits<{ (e: 'update:modelValue', v: string): void }>()
