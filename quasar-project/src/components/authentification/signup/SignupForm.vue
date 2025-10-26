@@ -29,7 +29,7 @@
             />
           </div>
         </div>
-        
+
         <div class="q-mb-md">
           <AuthInput
             v-model="email"
@@ -38,7 +38,7 @@
             :rules="[(v) => !!v || 'Email is required']"
           />
         </div>
-        
+
         <div class="q-mb-md">
           <AuthInput
             v-model="password"
@@ -47,7 +47,7 @@
             :rules="[(v) => !!v || 'Password is required', (v) => v.length >= 6 || 'Password must be at least 6 characters']"
           />
         </div>
-        
+
         <div class="q-mb-md">
           <AuthInput
             v-model="repeatPassword"
@@ -65,11 +65,12 @@
           size="lg"
           class="full-width signup-btn q-mb-md"
           no-caps
+          to="/"
         />
       </q-form>
 
       <q-separator class="q-my-lg" />
-      
+
       <div class="login-section text-center">
         <div class="q-mb-sm text-body2 text-grey-7">Already have an account?</div>
         <q-btn

@@ -1,4 +1,3 @@
-<!-- src/pages/Chat.vue -->
 <template>
   <q-page class="chat-page column">
     <ChatMessage :messages="messages" />
@@ -12,15 +11,17 @@ import ChatMessage from 'src/components/chat-container/chat/include/ChatMessage.
 import ChatInput from 'src/components/chat-container/chat/include/ChatInput.vue'
 import { useChat, useCommands } from 'src/composables'
 import { Notify } from 'quasar'
+import { CURRENT_USER_ID } from 'src/services/mock/mockData'
 
 const chat = useChat()
 const commands = useCommands()
 
+// computed messages include senderId, timestamp, etc.
 const messages = computed(() =>
   chat.activeMessages.value.map((m) => ({
+    senderId: m.senderId,
     sender: m.senderName,
     text: m.text,
-    avatar: m.senderAvatar,
     timestamp: m.createdAt,
   }))
 )
@@ -28,20 +29,21 @@ const messages = computed(() =>
 async function handleSendMessage(text: string) {
   const raw = text.trim()
   if (!raw) return
-  
+
+  // Command handling
   if (raw.startsWith('/')) {
     const res = await commands.handleCommand(raw)
-    if (res.success) {
-      if (res.message) Notify.create({ message: res.message, color: 'positive' })
-    } else {
+    if (res.success && res.message)
+      Notify.create({ message: res.message, color: 'positive' })
+    else
       Notify.create({ message: res.error || 'Command failed', color: 'negative' })
-    }
     return
   }
-  
+
+  // Send message only once
   try {
     await chat.sendMessage(raw)
-  } catch (error) {
+  } catch {
     Notify.create({ message: 'Failed to send message', color: 'negative' })
   }
 }
@@ -56,5 +58,3 @@ async function handleSendMessage(text: string) {
   padding: 0;
 }
 </style>
-
-

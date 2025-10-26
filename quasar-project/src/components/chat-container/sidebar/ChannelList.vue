@@ -32,7 +32,7 @@
         </q-btn>
       </div>
     </div>
-    
+
     <div class="channel-items">
       <div
         v-for="ch in channels"
@@ -46,7 +46,10 @@
             size="18px"
             class="channel-icon"
           />
-          <span class="channel-name">{{ ch.name }}</span>
+          <!-- Apply 'active' class if this is the current channel -->
+          <span :class="['channel-name', { active: ch.id === currentChannelId }]">
+            {{ ch.name }}
+          </span>
         </div>
         <div class="channel-actions" v-if="isOwner(ch)">
           <q-btn
@@ -70,13 +73,20 @@
 <script setup lang="ts">
 import type { Channel } from 'src/models/Channel'
 
-const props = defineProps<{ channels: Channel[]; currentUserId?: string | number }>()
+const props = defineProps<{
+  channels: Channel[]
+  currentUserId?: string | number
+  currentChannelId?: string
+}>()
 defineEmits(['open', 'create', 'leave', 'delete', 'refresh'])
 
-function isOwner(ch: Channel) { return props.currentUserId != null && props.currentUserId === ch.ownerId }
+function isOwner(ch: Channel) {
+  return props.currentUserId != null && props.currentUserId === ch.ownerId
+}
 </script>
 
 <style scoped>
+/* === KEEP ALL YOUR ORIGINAL CSS === */
 .channel-list {
   margin-bottom: 24px;
 }
@@ -165,6 +175,12 @@ function isOwner(ch: Channel) { return props.currentUserId != null && props.curr
   white-space: nowrap;
 }
 
+/* NEW: highlight active channel */
+.channel-name.active {
+  font-weight: 700;
+  color: #611f69;
+}
+
 .invited-badge {
   font-size: 11px;
   padding: 2px 6px;
@@ -183,6 +199,4 @@ function isOwner(ch: Channel) { return props.currentUserId != null && props.curr
 .delete-btn:hover {
   color: #e01e5a !important;
 }
-</style> 
-
-
+</style>

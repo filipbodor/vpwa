@@ -1,4 +1,3 @@
-<!-- src/components/ChatInput.vue -->
 <template>
   <div class="chat-footer">
     <div class="chat-input-wrapper">
@@ -8,39 +7,15 @@
         outlined
         dense
         placeholder="Message..."
-        @keyup.enter="send"
         bg-color="white"
+        @keyup.enter="handleSend"
       >
         <template v-slot:prepend>
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            icon="add_circle_outline"
-            color="grey-7"
-            class="q-mr-xs"
-          />
+          <q-btn flat dense round size="sm" icon="add_circle_outline" color="grey-7" class="q-mr-xs" />
         </template>
         <template v-slot:append>
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            icon="sentiment_satisfied_alt"
-            color="grey-7"
-            class="q-mr-xs"
-          />
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            icon="alternate_email"
-            color="grey-7"
-            class="q-mr-xs"
-          />
+          <q-btn flat dense round size="sm" icon="sentiment_satisfied_alt" color="grey-7" class="q-mr-xs" />
+          <q-btn flat dense round size="sm" icon="alternate_email" color="grey-7" class="q-mr-xs" />
           <q-btn
             flat
             dense
@@ -48,7 +23,7 @@
             size="sm"
             icon="send"
             color="primary"
-            @click="send"
+            @click="handleSend"
             :disable="!text.trim()"
           />
         </template>
@@ -59,6 +34,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
 
 const emit = defineEmits<{
   (e: 'send', message: string): void
@@ -66,10 +44,34 @@ const emit = defineEmits<{
 
 const text = ref('')
 
-function send() {
-  if (!text.value.trim()) return
-  emit('send', text.value)
+function handleSend() {
+  const value = text.value.trim()
+  if (!value) return
+
+  sendMessage(value)
+  showNotif(value)
+
   text.value = ''
+}
+
+function sendMessage(message: string) {
+  console.log('sendMessage called', message, new Date().toISOString())
+  emit('send', message)
+}
+
+function showNotif(message: string) {
+  $q.notify({
+  message,
+  caption: 'You sent this just now',
+  classes: 'my-slack-notif',
+  position: 'top-right',
+  avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
+  timeout: 2500,
+  progress: true,      
+  actions: [
+    { icon: 'close', color: 'white', handler: () => {} }
+  ]
+})
 }
 </script>
 
@@ -108,4 +110,5 @@ function send() {
   padding: 8px 4px;
   font-size: 15px;
 }
+
 </style>
