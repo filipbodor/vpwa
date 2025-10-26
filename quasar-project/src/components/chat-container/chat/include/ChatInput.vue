@@ -8,7 +8,7 @@
         dense
         placeholder="Message..."
         bg-color="white"
-        @keyup.enter.prevent="sendMessage"
+        @keyup.enter="handleSend"
       >
         <template v-slot:prepend>
           <q-btn flat dense round size="sm" icon="add_circle_outline" color="grey-7" class="q-mr-xs" />
