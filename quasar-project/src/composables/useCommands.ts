@@ -9,7 +9,7 @@ export function useCommands() {
   const getCurrentUserId = () => authStore.currentUserId
   const getActiveThread = () => chatStore.activeThread
   const findChannelByName = (name: string) => channelStore.findChannelByName(name)
-  const findUserByName = (name: string) => userStore.findUserByName(name)
+  const findUserByUsername = (username: string) => userStore.findUserByUsername(username)
   const getActiveChannelInfo = () => {
     const thread = chatStore.activeThread
     if (!thread || thread.type !== 'channel') return null
@@ -57,8 +57,8 @@ export function useCommands() {
         }
 
         case 'invite': {
-          const userName = args[0]
-          if (!userName) {
+          const username = args[0]
+          if (!username) {
             return { success: false, error: 'Usage: /invite <username>' }
           }
 
@@ -66,9 +66,9 @@ export function useCommands() {
             return { success: false, error: 'You must be in a channel to invite users' }
           }
 
-          const user = findUserByName(userName)
+          const user = findUserByUsername(username)
           if (!user) {
-            return { success: false, error: `User "${userName}" not found` }
+            return { success: false, error: `User "@${username}" not found` }
           }
 
           const channelInfo = getActiveChannelInfo()
@@ -81,13 +81,13 @@ export function useCommands() {
           }
 
           await channelStore.inviteUser(activeThread.id, user.id)
-          return { success: true, message: `Invited ${userName} to the channel` }
+          return { success: true, message: `Invited @${username} to the channel` }
         }
 
         case 'revoke':
         case 'kick': {
-          const userName = args[0]
-          if (!userName) {
+          const username = args[0]
+          if (!username) {
             return { success: false, error: `Usage: /${command} <username>` }
           }
 
@@ -95,9 +95,9 @@ export function useCommands() {
             return { success: false, error: 'You must be in a channel to remove users' }
           }
 
-          const user = findUserByName(userName)
+          const user = findUserByUsername(username)
           if (!user) {
-            return { success: false, error: `User "${userName}" not found` }
+            return { success: false, error: `User "@${username}" not found` }
           }
 
           const channelInfo = getActiveChannelInfo()
@@ -110,7 +110,7 @@ export function useCommands() {
               return { success: false, error: 'Only the channel owner can revoke users' }
             }
             await channelStore.removeUser(activeThread.id, user.id)
-            return { success: true, message: `Removed ${userName} from the channel` }
+            return { success: true, message: `Removed @${username} from the channel` }
           } else {
             const voteKey = `${activeThread.id}:${user.id}`
             let votes = voteKicks.get(voteKey)
@@ -124,7 +124,7 @@ export function useCommands() {
             if (votes.size >= 3) {
               await channelStore.removeUser(activeThread.id, user.id)
               voteKicks.delete(voteKey)
-              return { success: true, message: `${userName} has been kicked from the channel` }
+              return { success: true, message: `@${username} has been kicked from the channel` }
             } else {
               return { success: true, message: `Vote recorded (${votes.size}/3 votes to kick)` }
             }
