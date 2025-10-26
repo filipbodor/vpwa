@@ -67,7 +67,6 @@ function showChannelInfo() {
   }
 }
 
-// Expose the function so it can be called externally (e.g., from commands)
 defineExpose({ showChannelInfo })
 </script>
 
