@@ -1,8 +1,8 @@
 <template>
   <div class="dm-list">
     <div class="section-header">
-      <div class="section-title">
-        <q-icon name="expand_more" size="18px" class="q-mr-xs" />
+      <div class="section-title" @click="expanded = !expanded">
+        <q-icon :name="expanded ? 'expand_more' : 'chevron_right'" size="18px" class="q-mr-xs expand-icon" />
         <span>Direct Messages</span>
       </div>
       <div class="section-actions">
@@ -14,13 +14,14 @@
           icon="edit"
           color="grey-6"
           class="header-btn"
+          @click.stop
         >
           <q-tooltip>New message</q-tooltip>
         </q-btn>
       </div>
     </div>
 
-    <div class="dm-items">
+    <div v-show="expanded" class="dm-items">
       <div
         v-for="dm in dms"
         :key="dm.id"
@@ -42,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import DMStatus from 'src/components/chat-container/sidebar/DMStatus.vue'
 
 interface DMView {
@@ -59,6 +61,8 @@ defineProps<{
   currentDmId?: string
 }>()
 defineEmits(['open'])
+
+const expanded = ref(true)
 </script>
 
 <style scoped>
@@ -86,6 +90,10 @@ defineEmits(['open'])
 
 .section-title:hover {
   color: #611f69;
+}
+
+.expand-icon {
+  transition: transform 0.2s ease;
 }
 
 .section-actions {
