@@ -38,6 +38,8 @@
           size="lg"
           class="full-width login-btn q-mb-md"
           no-caps
+          :loading="isLoading"
+          :disable="isLoading"
         />
       </q-form>
 
@@ -74,24 +76,51 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import type { QForm } from 'quasar'
 import AuthInput from 'src/components/authentification/shared/AuthInput.vue'
+import { useAuthStore } from 'src/stores/pinia-stores'
 
 const router = useRouter()
+const $q = useQuasar()
+const authStore = useAuthStore()
 const loginForm = ref<QForm | null>(null)
 
 const emailOrUsername = ref('')
 const password = ref('')
-const showPassword = ref(false)
+const isLoading = ref(false)
 
 async function submitForm() {
   if (!loginForm.value) return
 
   const valid = await loginForm.value.validate()
-  if (valid) {
-    await router.push('/')  // navigate after successful login
-  } else {
-    console.log('Form is invalid!')
+  if (!valid) return
+
+  isLoading.value = true
+
+  try {
+    await authStore.login({
+      emailOrUsername: emailOrUsername.value,
+      password: password.value,
+    })
+
+    $q.notify({
+      type: 'positive',
+      message: 'Login successful!',
+      position: 'top',
+    })
+
+    await router.push('/')
+  } catch (error: any) {
+    console.error('Login error:', error)
+    $q.notify({
+      type: 'negative',
+      message: error?.response?.data?.errors?.[0]?.message || authStore.error || 'Invalid credentials. Please try again.',
+      position: 'top',
+      timeout: 3000,
+    })
+  } finally {
+    isLoading.value = false
   }
 }
 </script>

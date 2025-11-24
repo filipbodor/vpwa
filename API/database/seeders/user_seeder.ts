@@ -5,6 +5,7 @@ export default class extends BaseSeeder {
   async run() {
     await User.updateOrCreateMany('email', [
       {
+        id: '550e8400-e29b-41d4-a716-446655440001',
         email: 'you@example.com',
         firstName: 'Your',
         lastName: 'Name',
@@ -14,6 +15,7 @@ export default class extends BaseSeeder {
         status: 'online',
       },
       {
+        id: '550e8400-e29b-41d4-a716-446655440002',
         email: 'alice@example.com',
         firstName: 'Alice',
         lastName: 'Johnson',
@@ -23,6 +25,7 @@ export default class extends BaseSeeder {
         status: 'online',
       },
       {
+        id: '550e8400-e29b-41d4-a716-446655440003',
         email: 'bob@example.com',
         firstName: 'Bob',
         lastName: 'Smith',
@@ -32,6 +35,7 @@ export default class extends BaseSeeder {
         status: 'away',
       },
       {
+        id: '550e8400-e29b-41d4-a716-446655440004',
         email: 'carol@example.com',
         firstName: 'Carol',
         lastName: 'White',
@@ -41,6 +45,7 @@ export default class extends BaseSeeder {
         status: 'busy',
       },
       {
+        id: '550e8400-e29b-41d4-a716-446655440005',
         email: 'diana@example.com',
         firstName: 'Diana',
         lastName: 'Prince',

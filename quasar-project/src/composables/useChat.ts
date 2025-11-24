@@ -34,7 +34,7 @@ export function useChat() {
       } = {
         id: dm.id,
         userId: dm.userId,
-        name: user?.name || 'Unknown',
+        name: user?.fullName || 'Unknown',
         status: user?.status || 'offline',
       }
       if (user?.avatar) result.avatar = user.avatar
@@ -50,7 +50,7 @@ export function useChat() {
       const sender = userStore.getUserById(msg.senderId)
       return {
         ...msg,
-        senderName: sender?.name || 'Unknown',
+        senderName: sender?.fullName || 'Unknown',
         senderAvatar: sender?.avatar,
         isCurrentUser: msg.senderId === currentUserId.value,
       }
@@ -75,7 +75,7 @@ export function useChat() {
     const user = userStore.getUserById(dm.userId)
     return {
       ...dm,
-      userName: user?.name || 'Unknown',
+      userName: user?.fullName || 'Unknown',
       userAvatar: user?.avatar,
       userStatus: user?.status || 'offline',
     }
