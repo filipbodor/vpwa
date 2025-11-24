@@ -10,7 +10,7 @@
         v-for="(msg, index) in displayedMessages"
         :key="msg.id || index"
         class="message-wrapper"
-        :class="{ 'message-sent': msg.senderId === CURRENT_USER_ID }"
+        :class="{ 'message-sent': msg.senderId === currentUserId }"
       >
         <div class="message-avatar">
           <q-avatar size="36px" color="primary" text-color="white">
@@ -24,7 +24,7 @@
           </div>
           <div
             class="message-bubble"
-            :class="{ 'message-bubble-sent': msg.senderId === CURRENT_USER_ID }"
+            :class="{ 'message-bubble-sent': msg.senderId === currentUserId }"
           >
             {{ msg.text }}
           </div>
@@ -42,10 +42,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
-import { CURRENT_USER_ID } from 'src/services/mock/mockData'
 
 const props = defineProps<{
   messages: { id?: string; senderId: string; sender: string; text: string; timestamp?: number }[]
+  currentUserId: string
 }>()
 
 const chatContainer = ref<HTMLElement | null>(null)

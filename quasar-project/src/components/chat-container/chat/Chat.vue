@@ -1,6 +1,6 @@
 <template>
   <q-page class="chat-page column">
-    <ChatMessage :messages="messages" />
+    <ChatMessage :messages="messages" :current-user-id="chat.currentUserId.value" />
     <ChatInput @send="handleSendMessage" />
   </q-page>
 </template>
@@ -11,7 +11,6 @@ import ChatMessage from 'src/components/chat-container/chat/include/ChatMessage.
 import ChatInput from 'src/components/chat-container/chat/include/ChatInput.vue'
 import { useChat, useCommands } from 'src/composables'
 import { Notify } from 'quasar'
-import { CURRENT_USER_ID } from 'src/services/mock/mockData'
 
 const emit = defineEmits<{
   (e: 'open-channel-info'): void

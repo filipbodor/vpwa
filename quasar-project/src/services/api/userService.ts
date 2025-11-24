@@ -19,8 +19,36 @@ export const userService = {
   },
 
   async getUserById(userId: string): Promise<User | null> {
-    // TODO: Implement get user by id endpoint
     return null
+  },
+
+  async searchUsers(query: string): Promise<User[]> {
+    try {
+      const { data } = await apiClient.get<{ users: Array<{
+        id: string
+        username: string
+        firstName: string
+        lastName: string
+        fullName: string
+        avatar?: string
+        status: UserStatus
+      }> }>('/users/search', {
+        params: { q: query }
+      })
+
+      return data.users.map(u => ({
+        id: u.id,
+        username: u.username,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        fullName: u.fullName,
+        status: u.status,
+        ...(u.avatar && { avatar: u.avatar }),
+      }))
+    } catch (error) {
+      console.error('Failed to search users:', error)
+      return []
+    }
   },
 
   async getDirectMessages(): Promise<{ directMessages: DirectMessage[], users: User[] }> {

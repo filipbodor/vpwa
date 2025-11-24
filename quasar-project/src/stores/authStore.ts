@@ -17,6 +17,13 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     error.value = null
     try {
+      // Clear all stores before login to prevent stale data
+      const { useChannelStore, useChatStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
+      useChannelStore().channels.clear()
+      useChatStore().directMessages.clear()
+      useUserStore().clearUsers()
+      useMessageStore().clearAllMessages()
+      
       const response = await authService.login(credentials)
       currentUser.value = response.user as User
       return response
@@ -32,6 +39,12 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     error.value = null
     try {
+      const { useChannelStore, useChatStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
+      useChannelStore().channels.clear()
+      useChatStore().directMessages.clear()
+      useUserStore().clearUsers()
+      useMessageStore().clearAllMessages()
+      
       const response = await authService.register(userData)
       currentUser.value = response.user as User
       return response
@@ -85,11 +98,19 @@ export const useAuthStore = defineStore('auth', () => {
       await authService.logout()
     } catch (e) {
       console.error('Logout error:', e)
+    } finally {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('current_user')
-    } finally {
       currentUser.value = null
+      
+      const { useChannelStore, useChatStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
+      useChannelStore().channels.clear()
+      useChatStore().directMessages.clear()
+      useUserStore().clearUsers()
+      useMessageStore().clearAllMessages()
+      
       isLoading.value = false
+      window.location.href = '/login'
     }
   }
 

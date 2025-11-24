@@ -23,6 +23,8 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null
     try {
       const { directMessages: dms, users } = await userService.getDirectMessages()
+      // Clear existing DMs before adding new ones
+      directMessages.value.clear()
       dms.forEach(dm => directMessages.value.set(dm.id, dm))
       
       // Add users to userStore

@@ -26,8 +26,9 @@ export default class DirectMessagesController {
     const user = auth.user!
 
     const dms = await DirectMessage.query()
-      .where('user1_id', user.id)
-      .orWhere('user2_id', user.id)
+      .where((query) => {
+        query.where('user1_id', user.id).orWhere('user2_id', user.id)
+      })
       .preload('user1')
       .preload('user2')
       .orderBy('last_message_at', 'desc')

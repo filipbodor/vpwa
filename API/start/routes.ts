@@ -14,8 +14,8 @@ const AuthController = () => import('#controllers/auth_controller')
 const ChannelsController = () => import('#controllers/channels_controller')
 const MessagesController = () => import('#controllers/messages_controller')
 const DirectMessagesController = () => import('#controllers/direct_messages_controller')
+const UsersController = () => import('#controllers/users_controller')
 
-// Root route
 router.get('/', async () => {
   return {
     hello: 'world',
@@ -24,44 +24,43 @@ router.get('/', async () => {
   }
 })
 
-// Auth routes
 router.group(() => {
   router.post('/register', [AuthController, 'register'])
   router.post('/login', [AuthController, 'login'])
 
-  // Protected routes
   router.get('/me', [AuthController, 'me']).use(middleware.auth())
   router.post('/logout', [AuthController, 'logout']).use(middleware.auth())
   router.patch('/status', [AuthController, 'updateStatus']).use(middleware.auth())
 }).prefix('/auth')
 
-// Channel routes (all protected)
 router.group(() => {
-  router.get('/public', [ChannelsController, 'public']) // Get all public channels
-  router.get('/', [ChannelsController, 'index']) // Get user's channels
-  router.post('/', [ChannelsController, 'store']) // Create channel
-  router.get('/:id', [ChannelsController, 'show']) // Get channel details
-  router.post('/:id/join', [ChannelsController, 'join']) // Join public channel
-  router.post('/:id/leave', [ChannelsController, 'leave']) // Leave channel
-  router.post('/:id/invite', [ChannelsController, 'invite']) // Invite user
-  router.post('/:id/kick', [ChannelsController, 'kick']) // Kick user (owner only)
-  router.delete('/:id', [ChannelsController, 'destroy']) // Delete channel (owner only)
-  router.post('/:id/clear-invite', [ChannelsController, 'clearInvite']) // Clear invite flag
+  router.get('/public', [ChannelsController, 'public'])
+  router.get('/', [ChannelsController, 'index'])
+  router.post('/', [ChannelsController, 'store'])
+  router.get('/:id', [ChannelsController, 'show'])
+  router.post('/:id/join', [ChannelsController, 'join'])
+  router.post('/:id/leave', [ChannelsController, 'leave'])
+  router.post('/:id/invite', [ChannelsController, 'invite'])
+  router.post('/:id/kick', [ChannelsController, 'kick'])
+  router.delete('/:id', [ChannelsController, 'destroy'])
+  router.post('/:id/clear-invite', [ChannelsController, 'clearInvite'])
   
-  // Channel messages
-  router.get('/:channelId/messages', [MessagesController, 'index']) // Get messages
-  router.post('/:channelId/messages', [MessagesController, 'store']) // Send message
+  router.get('/:channelId/messages', [MessagesController, 'index'])
+  router.post('/:channelId/messages', [MessagesController, 'store'])
 }).prefix('/channels').use(middleware.auth())
 
-// Message routes (all protected)
 router.group(() => {
-  router.delete('/:id', [MessagesController, 'destroy']) // Delete message
+  router.delete('/:id', [MessagesController, 'destroy'])
 }).prefix('/messages').use(middleware.auth())
 
-// Direct Message routes (all protected)
 router.group(() => {
-  router.get('/', [DirectMessagesController, 'index']) // Get DM conversations
-  router.post('/', [DirectMessagesController, 'store']) // Create/get DM
-  router.get('/:id/messages', [DirectMessagesController, 'messages']) // Get DM messages
-  router.post('/:id/messages', [DirectMessagesController, 'sendMessage']) // Send DM
+  router.get('/', [DirectMessagesController, 'index'])
+  router.post('/', [DirectMessagesController, 'store'])
+  router.get('/:id/messages', [DirectMessagesController, 'messages'])
+  router.post('/:id/messages', [DirectMessagesController, 'sendMessage'])
 }).prefix('/direct-messages').use(middleware.auth())
+
+router.group(() => {
+  router.get('/search', [UsersController, 'search'])
+  router.get('/:id', [UsersController, 'show'])
+}).prefix('/users').use(middleware.auth())

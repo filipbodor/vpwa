@@ -21,18 +21,18 @@ export default class extends BaseSeeder {
       teamAlpha: '550e8400-e29b-41d4-a716-446655440103',
     }
 
-    // Create Direct Message conversations
+    // Create Direct Message conversations (ensure user1Id < user2Id)
     const dm1 = await DirectMessage.create({
       id: '550e8400-e29b-41d4-a716-446655440201',
-      user1Id: userIds.you,
-      user2Id: userIds.alice,
+      user1Id: userIds.alice < userIds.you ? userIds.alice : userIds.you,
+      user2Id: userIds.alice < userIds.you ? userIds.you : userIds.alice,
       lastMessageAt: DateTime.now().minus({ minutes: 10 }),
     })
 
     const dm2 = await DirectMessage.create({
       id: '550e8400-e29b-41d4-a716-446655440202',
-      user1Id: userIds.you,
-      user2Id: userIds.bob,
+      user1Id: userIds.bob < userIds.you ? userIds.bob : userIds.you,
+      user2Id: userIds.bob < userIds.you ? userIds.you : userIds.bob,
       lastMessageAt: DateTime.now().minus({ hours: 2 }),
     })
 

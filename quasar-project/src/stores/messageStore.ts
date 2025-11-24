@@ -42,7 +42,12 @@ export const useMessageStore = defineStore('messages', () => {
     isLoading.value = true
     error.value = null
     try {
-      const newMessage = await messageService.sendMessage(thread, text)
+      const { message: newMessage, user } = await messageService.sendMessage(thread, text)
+      
+      // Add the user to userStore
+      const userStore = useUserStore()
+      userStore.addUser(user)
+      
       await fetchMessages(thread)
       return newMessage
     } catch (e) {
@@ -72,6 +77,10 @@ export const useMessageStore = defineStore('messages', () => {
     messagesByThread.value.delete(key)
   }
 
-  return { messagesByThread, isLoading, error, getMessagesForThread, fetchMessages, sendMessage, deleteMessage, clearMessages }
+  function clearAllMessages() {
+    messagesByThread.value.clear()
+  }
+
+  return { messagesByThread, isLoading, error, getMessagesForThread, fetchMessages, sendMessage, deleteMessage, clearMessages, clearAllMessages }
 })
 

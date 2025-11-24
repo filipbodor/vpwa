@@ -16,22 +16,37 @@ export default class ChannelsController {
         query.where('user_id', user.id)
       })
       .preload('owner')
-      .preload('members')
+      .preload('members', (query) => {
+        query.pivotColumns(['is_invited', 'joined_at'])
+      })
       .orderBy('last_active_at', 'desc')
 
     return response.ok({
-      channels: channels.map((channel) => ({
-        id: channel.id,
-        name: channel.name,
-        description: channel.description,
-        isPrivate: channel.isPrivate,
-        ownerId: channel.ownerId,
-        lastActiveAt: channel.lastActiveAt.toMillis(),
-        memberCount: channel.members.length,
-        memberIds: channel.members.map((m) => m.id),
-        // Check if user was recently invited (is_invited flag)
-        isNewInvite: channel.members.find((m) => m.id === user.id)?.$extras.pivot_is_invited || false,
-      })),
+      channels: channels.map((channel) => {
+        const currentMember = channel.members.find((m) => m.id === user.id)
+        const isInvited = currentMember?.$extras.pivot_is_invited ?? false
+        
+        return {
+          id: channel.id,
+          name: channel.name,
+          description: channel.description,
+          isPrivate: channel.isPrivate,
+          ownerId: channel.ownerId,
+          lastActiveAt: channel.lastActiveAt.toMillis(),
+          memberCount: channel.members.length,
+          memberIds: channel.members.map((m) => m.id),
+          members: channel.members.map((m) => ({
+            id: m.id,
+            username: m.username,
+            firstName: m.firstName,
+            lastName: m.lastName,
+            fullName: m.fullName,
+            avatar: m.avatar,
+            status: m.status,
+          })),
+          isNewInvite: isInvited,
+        }
+      }),
     })
   }
 
@@ -82,6 +97,15 @@ export default class ChannelsController {
         lastActiveAt: channel.lastActiveAt.toMillis(),
         memberCount: channel.members.length,
         memberIds: channel.members.map((m) => m.id),
+        members: channel.members.map((m) => ({
+          id: m.id,
+          username: m.username,
+          firstName: m.firstName,
+          lastName: m.lastName,
+          fullName: m.fullName,
+          avatar: m.avatar,
+          status: m.status,
+        })),
         isNewInvite: false,
       },
     })
@@ -121,6 +145,15 @@ export default class ChannelsController {
         lastActiveAt: channel.lastActiveAt.toMillis(),
         memberCount: channel.members.length,
         memberIds: channel.members.map((m) => m.id),
+        members: channel.members.map((m) => ({
+          id: m.id,
+          username: m.username,
+          firstName: m.firstName,
+          lastName: m.lastName,
+          fullName: m.fullName,
+          avatar: m.avatar,
+          status: m.status,
+        })),
         isOwner: channel.ownerId === user.id,
       },
     })

@@ -6,10 +6,10 @@ export default class extends BaseSeeder {
     await User.updateOrCreateMany('email', [
       {
         id: '550e8400-e29b-41d4-a716-446655440001',
-        email: 'you@example.com',
-        firstName: 'Your',
-        lastName: 'Name',
-        username: 'you',
+        email: 'john@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        username: 'johndoe',
         password: 'password123',
         avatar: '👤',
         status: 'online',

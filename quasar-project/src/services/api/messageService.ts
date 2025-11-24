@@ -66,7 +66,7 @@ export const messageService = {
     }
   },
 
-  async sendMessage(thread: Thread, text: string): Promise<Message> {
+  async sendMessage(thread: Thread, text: string): Promise<{ message: Message, user: User }> {
     let response: { data: { message: MessageResponse } }
     
     if (thread.type === 'channel') {
@@ -76,12 +76,24 @@ export const messageService = {
     }
 
     const msg = response.data.message
-    return {
+    const message: Message = {
       id: msg.id,
       senderId: msg.userId,
       text: msg.content,
       createdAt: msg.createdAt,
     }
+    
+    const user: User = {
+      id: msg.user.id,
+      username: msg.user.username,
+      firstName: msg.user.firstName,
+      lastName: msg.user.lastName,
+      fullName: msg.user.fullName,
+      status: 'offline',
+      ...(msg.user.avatar && { avatar: msg.user.avatar }),
+    }
+    
+    return { message, user }
   },
 
   async deleteMessage(messageId: string, thread: Thread): Promise<void> {

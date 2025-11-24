@@ -26,8 +26,13 @@ export const useChannelStore = defineStore('channels', () => {
     isLoading.value = true
     error.value = null
     try {
-      const channelList = await channelService.getMyChannels()
+      const { channels: channelList, users } = await channelService.getMyChannels()
+      channels.value.clear()
       channelList.forEach(channel => channels.value.set(channel.id, channel))
+      
+      const { useUserStore } = await import('./userStore')
+      const userStore = useUserStore()
+      userStore.addUsers(users as any)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch channels'
       throw e
@@ -52,8 +57,13 @@ export const useChannelStore = defineStore('channels', () => {
     isLoading.value = true
     error.value = null
     try {
-      const newChannel = await channelService.createChannel(data)
+      const { channel: newChannel, users } = await channelService.createChannel(data)
       channels.value.set(newChannel.id, newChannel)
+      
+      const { useUserStore } = await import('./userStore')
+      const userStore = useUserStore()
+      userStore.addUsers(users as any)
+      
       return newChannel
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to create channel'

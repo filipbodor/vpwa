@@ -1,4 +1,5 @@
 import { useAuthStore, useChannelStore, useChatStore, useUserStore } from 'src/stores/pinia-stores'
+import { userService } from 'src/services/api'
 
 export function useCommands() {
   const authStore = useAuthStore()
@@ -66,11 +67,6 @@ export function useCommands() {
             return { success: false, error: 'You must be in a channel to invite users' }
           }
 
-          const user = findUserByUsername(username)
-          if (!user) {
-            return { success: false, error: `User "@${username}" not found` }
-          }
-
           const channelInfo = getActiveChannelInfo()
           if (!channelInfo) {
             return { success: false, error: 'Channel not found' }
@@ -80,7 +76,15 @@ export function useCommands() {
             return { success: false, error: 'Only the channel owner can invite users to private channels' }
           }
 
+          const users = await userService.searchUsers(username)
+          const user = users.find(u => u.username.toLowerCase() === username.toLowerCase())
+          
+          if (!user) {
+            return { success: false, error: `User "@${username}" not found` }
+          }
+
           await channelStore.inviteUser(activeThread.id, user.id)
+          userStore.addUser(user)
           return { success: true, message: `Invited @${username} to the channel` }
         }
 
@@ -95,14 +99,16 @@ export function useCommands() {
             return { success: false, error: 'You must be in a channel to remove users' }
           }
 
-          const user = findUserByUsername(username)
-          if (!user) {
-            return { success: false, error: `User "@${username}" not found` }
-          }
-
           const channelInfo = getActiveChannelInfo()
           if (!channelInfo) {
             return { success: false, error: 'Channel not found' }
+          }
+
+          const users = await userService.searchUsers(username)
+          const user = users.find(u => u.username.toLowerCase() === username.toLowerCase())
+          
+          if (!user) {
+            return { success: false, error: `User "@${username}" not found` }
           }
 
           if (command === 'revoke' || channelInfo.isOwner) {
