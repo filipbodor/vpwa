@@ -1,70 +1,115 @@
 import type { Channel } from 'src/models'
-import { mockChannels, CURRENT_USER_ID } from '../mock/mockData'
+import { apiClient } from './apiClient'
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+interface ChannelResponse {
+  channel: {
+    id: string
+    name: string
+    description?: string
+    isPrivate: boolean
+    ownerId: string
+    lastActiveAt: number
+    memberCount: number
+    memberIds: string[]
+    isNewInvite?: boolean
+  }
+}
+
+interface ChannelsResponse {
+  channels: Array<{
+    id: string
+    name: string
+    description?: string
+    isPrivate: boolean
+    ownerId: string
+    lastActiveAt: number
+    memberCount: number
+    memberIds: string[]
+    isNewInvite?: boolean
+  }>
+}
 
 export const channelService = {
   async getMyChannels(): Promise<Channel[]> {
-    await delay(100)
-    return mockChannels.filter(ch => ch.memberIds.includes(CURRENT_USER_ID))
+    const { data } = await apiClient.get<ChannelsResponse>('/channels')
+    return data.channels.map(ch => ({
+      id: ch.id,
+      name: ch.name,
+      ...(ch.description && { description: ch.description }),
+      isPrivate: ch.isPrivate,
+      ownerId: ch.ownerId,
+      memberIds: ch.memberIds,
+      lastActiveAt: ch.lastActiveAt,
+      ...(ch.isNewInvite && { isNewInvite: ch.isNewInvite }),
+    }))
+  },
+
+  async getPublicChannels(): Promise<Channel[]> {
+    const { data } = await apiClient.get<ChannelsResponse>('/channels/public')
+    return data.channels.map(ch => ({
+      id: ch.id,
+      name: ch.name,
+      ...(ch.description && { description: ch.description }),
+      isPrivate: ch.isPrivate,
+      ownerId: ch.ownerId,
+      memberIds: ch.memberIds,
+      lastActiveAt: ch.lastActiveAt,
+    }))
   },
 
   async getChannelById(id: string): Promise<Channel | null> {
-    await delay(50)
-    return mockChannels.find(ch => ch.id === id) || null
+    try {
+      const { data } = await apiClient.get<ChannelResponse>(`/channels/${id}`)
+      return {
+        id: data.channel.id,
+        name: data.channel.name,
+        ...(data.channel.description && { description: data.channel.description }),
+        isPrivate: data.channel.isPrivate,
+        ownerId: data.channel.ownerId,
+        memberIds: data.channel.memberIds,
+        lastActiveAt: data.channel.lastActiveAt,
+      }
+    } catch (error) {
+      return null
+    }
   },
 
   async createChannel(data: { name: string; description?: string; isPrivate: boolean }): Promise<Channel> {
-    await delay(200)
-    const newChannel: Channel = {
-      id: `channel-${Date.now()}`,
-      name: data.name,
-      ...(data.description ? { description: data.description } : {}),
-      isPrivate: data.isPrivate,
-      ownerId: CURRENT_USER_ID,
-      memberIds: [CURRENT_USER_ID],
-      lastActiveAt: Date.now(),
+    const response = await apiClient.post<ChannelResponse>('/channels', data)
+    const ch = response.data.channel
+    return {
+      id: ch.id,
+      name: ch.name,
+      ...(ch.description && { description: ch.description }),
+      isPrivate: ch.isPrivate,
+      ownerId: ch.ownerId,
+      memberIds: ch.memberIds,
+      lastActiveAt: ch.lastActiveAt,
     }
-    mockChannels.push(newChannel)
-    return newChannel
   },
 
   async joinChannel(channelId: string): Promise<void> {
-    await delay(150)
-    const channel = mockChannels.find(ch => ch.id === channelId)
-    if (channel && !channel.memberIds.includes(CURRENT_USER_ID)) {
-      channel.memberIds.push(CURRENT_USER_ID)
-    }
+    await apiClient.post(`/channels/${channelId}/join`)
   },
 
   async leaveChannel(channelId: string): Promise<void> {
-    await delay(150)
-    const channel = mockChannels.find(ch => ch.id === channelId)
-    if (channel) {
-      channel.memberIds = channel.memberIds.filter(id => id !== CURRENT_USER_ID)
-    }
+    await apiClient.post(`/channels/${channelId}/leave`)
   },
 
   async deleteChannel(channelId: string): Promise<void> {
-    await delay(150)
-    const index = mockChannels.findIndex(ch => ch.id === channelId)
-    if (index !== -1) mockChannels.splice(index, 1)
+    await apiClient.delete(`/channels/${channelId}`)
   },
 
   async inviteUser(channelId: string, userId: string): Promise<void> {
-    await delay(100)
-    const channel = mockChannels.find(ch => ch.id === channelId)
-    if (channel && !channel.memberIds.includes(userId)) {
-      channel.memberIds.push(userId)
-    }
+    await apiClient.post(`/channels/${channelId}/invite`, { userId })
   },
 
   async removeUser(channelId: string, userId: string): Promise<void> {
-    await delay(100)
-    const channel = mockChannels.find(ch => ch.id === channelId)
-    if (channel) {
-      channel.memberIds = channel.memberIds.filter(id => id !== userId)
-    }
+    await apiClient.post(`/channels/${channelId}/kick`, { userId })
+  },
+
+  async clearInviteFlag(channelId: string): Promise<void> {
+    await apiClient.post(`/channels/${channelId}/clear-invite`)
   },
 }
 

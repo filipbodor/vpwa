@@ -8,9 +8,19 @@ export const useChannelStore = defineStore('channels', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  const channelList = computed(() => Array.from(channels.value.values()).sort((a, b) => b.lastActiveAt - a.lastActiveAt))
+  const channelList = computed(() => {
+    // Sort channels: new invites first, then by last active
+    return Array.from(channels.value.values()).sort((a, b) => {
+      // New invites go to top
+      if (a.isNewInvite && !b.isNewInvite) return -1
+      if (!a.isNewInvite && b.isNewInvite) return 1
+      // Otherwise sort by last active
+      return b.lastActiveAt - a.lastActiveAt
+    })
+  })
   const publicChannels = computed(() => channelList.value.filter(ch => !ch.isPrivate))
   const privateChannels = computed(() => channelList.value.filter(ch => ch.isPrivate))
+  const newInviteChannels = computed(() => channelList.value.filter(ch => ch.isNewInvite))
 
   async function fetchMyChannels() {
     isLoading.value = true
@@ -111,10 +121,23 @@ export const useChannelStore = defineStore('channels', () => {
     return channelList.value.find(ch => ch.name === name)
   }
 
+  async function clearInviteFlag(channelId: string) {
+    try {
+      await channelService.clearInviteFlag(channelId)
+      const channel = channels.value.get(channelId)
+      if (channel) {
+        channels.value.set(channelId, { ...channel, isNewInvite: false })
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to clear invite flag'
+      throw e
+    }
+  }
+
   return {
-    channels, isLoading, error, channelList, publicChannels, privateChannels,
+    channels, isLoading, error, channelList, publicChannels, privateChannels, newInviteChannels,
     fetchMyChannels, fetchChannelById, createChannel, joinChannel, leaveChannel,
-    deleteChannel, inviteUser, removeUser, getChannelById, findChannelByName
+    deleteChannel, inviteUser, removeUser, getChannelById, findChannelByName, clearInviteFlag
   }
 })
 

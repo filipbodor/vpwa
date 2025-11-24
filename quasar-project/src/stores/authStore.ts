@@ -44,6 +44,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function fetchCurrentUser() {
+    if (!authService.isAuthenticated()) {
+      currentUser.value = null
+      return
+    }
+
     isLoading.value = true
     error.value = null
     try {
@@ -51,6 +56,9 @@ export const useAuthStore = defineStore('auth', () => {
       currentUser.value = response.user as User
     } catch (e: any) {
       error.value = e.response?.data?.errors?.[0]?.message || e.message || 'Failed to fetch user'
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('current_user')
+      currentUser.value = null
       throw e
     } finally {
       isLoading.value = false
@@ -77,6 +85,8 @@ export const useAuthStore = defineStore('auth', () => {
       await authService.logout()
     } catch (e) {
       console.error('Logout error:', e)
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('current_user')
     } finally {
       currentUser.value = null
       isLoading.value = false

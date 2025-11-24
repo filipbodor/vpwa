@@ -22,25 +22,27 @@ export function useChat() {
   })
 
   const directMessages = computed(() => {
-    return chatStore.dmList.map(dm => {
-      const user = userStore.getUserById(dm.userId)
-      const result: {
-        id: string
-        userId: string
-        name: string
-        avatar?: string
-        status?: 'online' | 'away' | 'busy' | 'offline'
-        lastMessageAt?: number
-      } = {
-        id: dm.id,
-        userId: dm.userId,
-        name: user?.fullName || 'Unknown',
-        status: user?.status || 'offline',
-      }
-      if (user?.avatar) result.avatar = user.avatar
-      if (dm.lastMessageAt) result.lastMessageAt = dm.lastMessageAt
-      return result
-    })
+    return chatStore.dmList
+      .filter(dm => dm.userId !== currentUserId.value) // Filter out DMs with yourself
+      .map(dm => {
+        const user = userStore.getUserById(dm.userId)
+        const result: {
+          id: string
+          userId: string
+          name: string
+          avatar?: string
+          status?: 'online' | 'away' | 'busy' | 'offline'
+          lastMessageAt?: number
+        } = {
+          id: dm.id,
+          userId: dm.userId,
+          name: user?.fullName || 'Unknown',
+          status: user?.status || 'offline',
+        }
+        if (user?.avatar) result.avatar = user.avatar
+        if (dm.lastMessageAt) result.lastMessageAt = dm.lastMessageAt
+        return result
+      })
   })
 
   const activeMessages = computed(() => {
@@ -83,7 +85,10 @@ export function useChat() {
 
   async function initialize() {
     try {
-      await authStore.fetchCurrentUser()
+      if (!authStore.currentUser) {
+        await authStore.fetchCurrentUser()
+      }
+      
       await Promise.all([
         channelStore.fetchMyChannels(),
         chatStore.fetchDirectMessages(),
@@ -185,11 +190,20 @@ export function useChat() {
     }
   }
 
+  async function clearChannelInvite(channelId: string) {
+    try {
+      await channelStore.clearInviteFlag(channelId)
+    } catch (error) {
+      console.error('Failed to clear invite flag:', error)
+      throw error
+    }
+  }
+
   return {
     currentUser, currentUserId, userStatus, activeThread, channels, directMessages,
     activeMessages, activeChannelInfo, activeDMInfo, initialize, openChannel, openDM,
     sendMessage, createChannel, leaveChannel, deleteChannel, updateStatus,
-    findChannelByName, findUserByName, inviteToChannel, removeFromChannel
+    findChannelByName, findUserByName, inviteToChannel, removeFromChannel, clearChannelInvite
   }
 }
 

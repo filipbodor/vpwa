@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Message, Thread } from 'src/models'
 import { messageService } from 'src/services/api'
+import { useUserStore } from './userStore'
 
 export const useMessageStore = defineStore('messages', () => {
   const messagesByThread = ref<Map<string, Message[]>>(new Map())
@@ -22,8 +23,12 @@ export const useMessageStore = defineStore('messages', () => {
     isLoading.value = true
     error.value = null
     try {
-      const messages = await messageService.getMessages(thread)
+      const { messages, users } = await messageService.getMessages(thread)
       messagesByThread.value.set(key, messages)
+      
+      // Add users to userStore
+      const userStore = useUserStore()
+      userStore.addUsers(users)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch messages'
       throw e
@@ -62,27 +67,11 @@ export const useMessageStore = defineStore('messages', () => {
     }
   }
 
-  async function editMessage(messageId: string, thread: Thread, newText: string) {
-    const key = getThreadKey(thread)
-    try {
-      const updatedMessage = await messageService.editMessage(messageId, thread, newText)
-      const messages = messagesByThread.value.get(key)
-      if (messages) {
-        const index = messages.findIndex(msg => msg.id === messageId)
-        if (index !== -1) messages[index] = updatedMessage
-      }
-      return updatedMessage
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to edit message'
-      throw e
-    }
-  }
-
   function clearMessages(thread: Thread) {
     const key = getThreadKey(thread)
     messagesByThread.value.delete(key)
   }
 
-  return { messagesByThread, isLoading, error, getMessagesForThread, fetchMessages, sendMessage, deleteMessage, editMessage, clearMessages }
+  return { messagesByThread, isLoading, error, getMessagesForThread, fetchMessages, sendMessage, deleteMessage, clearMessages }
 })
 

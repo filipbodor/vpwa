@@ -6,7 +6,7 @@ export interface User {
   lastName: string
   fullName: string
   username: string
-  email: string
+  email?: string
   avatar?: string
   status: UserStatus
 }

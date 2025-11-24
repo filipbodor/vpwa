@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Thread, DirectMessage } from 'src/models'
 import { userService } from 'src/services/api'
+import { useUserStore } from './userStore'
 
 export const useChatStore = defineStore('chat', () => {
   const activeThread = ref<Thread | null>(null)
@@ -21,8 +22,12 @@ export const useChatStore = defineStore('chat', () => {
     isLoading.value = true
     error.value = null
     try {
-      const dms = await userService.getDirectMessages()
+      const { directMessages: dms, users } = await userService.getDirectMessages()
       dms.forEach(dm => directMessages.value.set(dm.id, dm))
+      
+      // Add users to userStore
+      const userStore = useUserStore()
+      userStore.addUsers(users)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch direct messages'
       throw e

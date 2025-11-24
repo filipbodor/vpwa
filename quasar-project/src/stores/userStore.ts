@@ -9,17 +9,17 @@ export const useUserStore = defineStore('users', () => {
   const error = ref<string | null>(null)
 
   async function fetchAllUsers() {
-    isLoading.value = true
-    error.value = null
-    try {
-      const userList = await userService.getAllUsers()
-      userList.forEach(user => users.value.set(user.id, user))
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to fetch users'
-      throw e
-    } finally {
-      isLoading.value = false
-    }
+    // Users are populated from messages and channels
+    // No need to fetch all users separately for now
+    isLoading.value = false
+  }
+
+  function addUser(user: User) {
+    users.value.set(user.id, user)
+  }
+
+  function addUsers(userList: User[]) {
+    userList.forEach(user => users.value.set(user.id, user))
   }
 
   async function fetchUserById(userId: string) {
@@ -46,6 +46,6 @@ export const useUserStore = defineStore('users', () => {
     return Array.from(users.value.values()).find(u => u.username.toLowerCase() === username.toLowerCase())
   }
 
-  return { users, isLoading, error, fetchAllUsers, fetchUserById, getUserById, findUserByName, findUserByUsername }
+  return { users, isLoading, error, fetchAllUsers, fetchUserById, getUserById, findUserByName, findUserByUsername, addUser, addUsers }
 })
 

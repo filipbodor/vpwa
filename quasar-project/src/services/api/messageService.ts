@@ -1,49 +1,91 @@
-import type { Message, Thread } from 'src/models'
-import { mockMessages, CURRENT_USER_ID } from '../mock/mockData'
+import type { Message, Thread, User } from 'src/models'
+import { apiClient } from './apiClient'
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+interface MessageResponse {
+  id: string
+  userId: string
+  content: string
+  createdAt: number
+  user: {
+    id: string
+    username: string
+    firstName: string
+    lastName: string
+    fullName: string
+    avatar?: string
+  }
+}
 
-const getThreadKey = (thread: Thread): string => `${thread.type}:${thread.id}`
+interface MessagesResponse {
+  messages: MessageResponse[]
+  meta?: {
+    total: number
+    perPage: number
+    currentPage: number
+    lastPage: number
+  }
+}
 
 export const messageService = {
-  async getMessages(thread: Thread): Promise<Message[]> {
-    await delay(100)
-    const key = getThreadKey(thread)
-    return [...(mockMessages[key] || [])]
+  async getMessages(thread: Thread): Promise<{ messages: Message[], users: User[] }> {
+    try {
+      let response: { data: MessagesResponse }
+      
+      if (thread.type === 'channel') {
+        response = await apiClient.get<MessagesResponse>(`/channels/${thread.id}/messages`)
+      } else {
+        response = await apiClient.get<MessagesResponse>(`/direct-messages/${thread.id}/messages`)
+      }
+
+      const messages = response.data.messages.map(msg => ({
+        id: msg.id,
+        senderId: msg.userId,
+        text: msg.content,
+        createdAt: msg.createdAt,
+      }))
+
+      const users: User[] = response.data.messages.map(msg => {
+        const user: User = {
+          id: msg.user.id,
+          username: msg.user.username,
+          firstName: msg.user.firstName,
+          lastName: msg.user.lastName,
+          fullName: msg.user.fullName,
+          status: 'offline',
+        }
+        if (msg.user.avatar) {
+          user.avatar = msg.user.avatar
+        }
+        return user
+      })
+
+      return { messages, users }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error)
+      return { messages: [], users: [] }
+    }
   },
 
   async sendMessage(thread: Thread, text: string): Promise<Message> {
-    await delay(150)
-    const newMessage: Message = {
-      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      senderId: CURRENT_USER_ID,
-      text,
-      createdAt: Date.now(),
+    let response: { data: { message: MessageResponse } }
+    
+    if (thread.type === 'channel') {
+      response = await apiClient.post(`/channels/${thread.id}/messages`, { content: text })
+    } else {
+      response = await apiClient.post(`/direct-messages/${thread.id}/messages`, { content: text })
     }
-    const key = getThreadKey(thread)
-    if (!mockMessages[key]) mockMessages[key] = []
-    mockMessages[key].push(newMessage)
-    return newMessage
+
+    const msg = response.data.message
+    return {
+      id: msg.id,
+      senderId: msg.userId,
+      text: msg.content,
+      createdAt: msg.createdAt,
+    }
   },
 
   async deleteMessage(messageId: string, thread: Thread): Promise<void> {
-    await delay(100)
-    const key = getThreadKey(thread)
-    if (mockMessages[key]) {
-      mockMessages[key] = mockMessages[key].filter(msg => msg.id !== messageId)
-    }
-  },
-
-  async editMessage(messageId: string, thread: Thread, newText: string): Promise<Message> {
-    await delay(100)
-    const key = getThreadKey(thread)
-    const message = mockMessages[key]?.find(msg => msg.id === messageId)
-    if (message) {
-      message.text = newText
-      message.updatedAt = Date.now()
-      return message
-    }
-    throw new Error('Message not found')
+    await apiClient.delete(`/messages/${messageId}`)
   },
 }
 
