@@ -28,15 +28,36 @@
       </span>
     </div>
     
-    <q-dialog v-model="previewDialog">
+    <q-dialog v-model="previewDialog" @hide="onDialogHide">
       <q-card style="min-width: 400px; max-width: 600px;">
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ selectedUser?.username }} is typing...</div>
+          <div class="text-h6">Typing preview</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
         
+        <q-card-section v-if="typingUsers.length > 1" class="q-pt-none">
+          <q-tabs
+            v-model="selectedUserId"
+            dense
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="left"
+          >
+            <q-tab
+              v-for="user in typingUsers"
+              :key="user.userId"
+              :name="user.userId"
+              :label="user.username"
+            />
+          </q-tabs>
+        </q-card-section>
+        
         <q-card-section>
+          <div v-if="selectedUser" class="preview-header">
+            <strong>{{ selectedUser.username }}</strong> is typing...
+          </div>
           <div class="preview-text">
             {{ selectedUser?.text || '...' }}
           </div>
@@ -47,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useTypingStore } from 'src/stores/pinia-stores'
 
 interface TypingUser {
@@ -79,10 +100,34 @@ const selectedUser = computed(() => {
 })
 
 function showPreview(user: TypingUser | undefined) {
-  if (!user) return
-  selectedUserId.value = user.userId
+  if (!user) {
+    if (typingUsers.value.length > 0 && typingUsers.value[0]) {
+      selectedUserId.value = typingUsers.value[0].userId
+    }
+  } else {
+    selectedUserId.value = user.userId
+  }
   previewDialog.value = true
 }
+
+function onDialogHide() {
+  selectedUserId.value = null
+}
+
+watch(typingUsers, (newUsers) => {
+  if (previewDialog.value && selectedUserId.value) {
+    const stillTyping = newUsers.find(u => u.userId === selectedUserId.value)
+    
+    if (!stillTyping) {
+      if (newUsers.length > 0 && newUsers[0]) {
+        selectedUserId.value = newUsers[0].userId
+      } else {
+        previewDialog.value = false
+        selectedUserId.value = null
+      }
+    }
+  }
+}, { deep: true })
 
 onMounted(() => {
   interval = setInterval(() => {
@@ -133,6 +178,18 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
+.preview-header {
+  font-size: 14px;
+  color: #616061;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+.preview-header strong {
+  color: #1264a3;
+  font-style: normal;
+}
+
 .preview-text {
   padding: 16px;
   background: #f5f5f5;
@@ -141,6 +198,8 @@ onUnmounted(() => {
   font-size: 14px;
   line-height: 1.6;
   min-height: 100px;
+  max-height: 300px;
+  overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
   color: #1d1c1d;
