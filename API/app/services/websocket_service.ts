@@ -68,13 +68,14 @@ export class WebSocketService {
     transmit.broadcast('global', payload)
   }
 
-  static async broadcastTyping(channelId: string, user: User, isTyping: boolean) {
+  static async broadcastTyping(channelId: string, userId: string, username: string, isTyping: boolean, text?: string) {
     const payload = {
       type: 'typing',
       channelId,
-      userId: user.id,
-      username: user.username,
+      userId,
+      username,
       isTyping,
+      text: text || '',
     }
 
     const channelName = `channels/${channelId}`

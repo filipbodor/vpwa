@@ -1,5 +1,5 @@
 import { ref, onUnmounted } from 'vue'
-import { useAuthStore, useMessageStore, useUserStore } from 'src/stores/pinia-stores'
+import { useAuthStore, useMessageStore, useUserStore, useTypingStore } from 'src/stores/pinia-stores'
 import { useAppNotifications } from './useAppNotifications'
 import type { Message } from 'src/models'
 
@@ -11,6 +11,7 @@ export function useWebSocket() {
   const authStore = useAuthStore()
   const messageStore = useMessageStore()
   const userStore = useUserStore()
+  const typingStore = useTypingStore()
   const notifications = useAppNotifications()
 
   const subscribedChannels = ref<Set<string>>(new Set())
@@ -238,7 +239,10 @@ export function useWebSocket() {
   }
 
   function handleTypingIndicator(data: any) {
-    // TODO: Implement typing indicator UI
+    const { channelId, userId, username, isTyping, text } = data
+    if (userId !== authStore.currentUserId) {
+      typingStore.setUserTyping(channelId, userId, username, isTyping, text || '')
+    }
   }
 
   function handleNotification(data: any) {
