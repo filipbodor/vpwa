@@ -10,7 +10,10 @@
         v-for="(msg, index) in displayedMessages"
         :key="msg.id || index"
         class="message-wrapper"
-        :class="{ 'message-sent': msg.senderId === currentUserId }"
+        :class="{
+          'message-sent': msg.senderId === currentUserId,
+          'message-mentioned': isMentioned(msg)
+        }"
       >
         <div class="message-avatar">
           <q-avatar size="36px" color="primary" text-color="white">
@@ -24,9 +27,12 @@
           </div>
           <div
             class="message-bubble"
-            :class="{ 'message-bubble-sent': msg.senderId === currentUserId }"
+            :class="{
+              'message-bubble-sent': msg.senderId === currentUserId,
+              'message-bubble-mentioned': isMentioned(msg)
+            }"
+            v-html="formatMessageText(msg.text)"
           >
-            {{ msg.text }}
           </div>
         </div>
       </div>
@@ -44,7 +50,7 @@
 import { ref, onMounted, nextTick, watch } from 'vue'
 
 const props = defineProps<{
-  messages: { id?: string; senderId: string; sender: string; text: string; timestamp?: number }[]
+  messages: { id?: string; senderId: string; sender: string; text: string; mentions?: string[]; timestamp?: number }[]
   currentUserId: string
 }>()
 
@@ -106,7 +112,16 @@ function formatTime(ts?: number) {
   return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
-// Watch for new messages
+function isMentioned(msg: { mentions?: string[] }) {
+  return msg.mentions?.includes(props.currentUserId) || false
+}
+
+function formatMessageText(text: string) {
+  const mentionPattern = /@(\w+)/g
+  return text.replace(mentionPattern, '<span class="mention">@$1</span>')
+}
+
+
 const currentChatKey = ref('')
 watch(
   () => props.messages,
@@ -216,5 +231,23 @@ onMounted(async () => {
 }
 .message-bubble-sent:hover {
   background: #4a154b;
+}
+.message-bubble-mentioned {
+  background: #fff8e1 !important;
+  color: #1d1c1d;
+}
+</style>
+
+<style>
+.mention {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.mention:hover {
+  background: #bbdefb;
 }
 </style>

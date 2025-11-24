@@ -140,6 +140,7 @@ export default class DirectMessagesController {
         id: msg.id,
         userId: msg.userId,
         content: msg.content,
+        mentions: msg.mentions || [],
         createdAt: msg.createdAt.toMillis(),
         user: {
           id: msg.user.id,
@@ -169,21 +170,30 @@ export default class DirectMessagesController {
       })
     }
 
-    // Check if user is part of this DM
     if (dm.user1Id !== user.id && dm.user2Id !== user.id) {
       return response.forbidden({
         errors: [{ message: 'You are not part of this conversation' }],
       })
     }
 
+    const mentionPattern = /@(\w+)/g
+    const mentionMatches = [...data.content.matchAll(mentionPattern)]
+    const mentionedUsernames = [...new Set(mentionMatches.map(m => m[1]))]
+    
+    const mentionedUsers = await User.query()
+      .whereIn('username', mentionedUsernames)
+      .select('id')
+    
+    const mentionIds = mentionedUsers.map(u => u.id)
+
     const message = await Message.create({
       id: crypto.randomUUID(),
       directMessageId: dm.id,
       userId: user.id,
       content: data.content,
+      mentions: mentionIds,
     })
 
-    // Update DM last message time
     dm.lastMessageAt = DateTime.now()
     await dm.save()
 
@@ -194,6 +204,7 @@ export default class DirectMessagesController {
         id: message.id,
         userId: message.userId,
         content: message.content,
+        mentions: message.mentions || [],
         createdAt: message.createdAt.toMillis(),
         user: {
           id: message.user.id,

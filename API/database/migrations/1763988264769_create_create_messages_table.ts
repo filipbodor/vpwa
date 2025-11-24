@@ -10,13 +10,12 @@ export default class extends BaseSchema {
       table.uuid('direct_message_id').nullable().references('id').inTable('direct_messages').onDelete('CASCADE')
       table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
       table.text('content').notNullable()
+      table.jsonb('mentions').nullable()
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
 
-      // Message must belong to either channel or direct message
       table.check('(channel_id IS NOT NULL AND direct_message_id IS NULL) OR (channel_id IS NULL AND direct_message_id IS NOT NULL)')
       
-      // Indexes for performance
       table.index(['channel_id', 'created_at'])
       table.index(['direct_message_id', 'created_at'])
       table.index('user_id')

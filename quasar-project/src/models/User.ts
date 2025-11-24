@@ -9,5 +9,7 @@ export interface User {
   email?: string
   avatar?: string
   status: UserStatus
+  mentionsOnly?: boolean
+  notificationsEnabled?: boolean
 }
 

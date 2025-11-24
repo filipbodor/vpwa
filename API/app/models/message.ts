@@ -21,13 +21,31 @@ export default class Message extends BaseModel {
   @column()
   declare content: string
 
+  @column({
+    prepare: (value: string[] | null) => value && value.length > 0 ? JSON.stringify(value) : null,
+    consume: (value: any) => {
+      if (!value) return []
+      if (Array.isArray(value)) return value
+      if (typeof value === 'string') {
+        if (value === '') return []
+        try {
+          const parsed = JSON.parse(value)
+          return Array.isArray(parsed) ? parsed : []
+        } catch {
+          return []
+        }
+      }
+      return []
+    },
+  })
+  declare mentions: string[]
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 
-  // Relationships
   @belongsTo(() => User, {
     foreignKey: 'userId',
   })
