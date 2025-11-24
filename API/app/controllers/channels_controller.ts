@@ -63,9 +63,16 @@ export default class ChannelsController {
       .first()
 
     if (existingChannel) {
-      return response.conflict({
-        errors: [{ message: 'Channel name already exists' }],
-      })
+      const thirtyDaysAgo = DateTime.now().minus({ days: 30 })
+      
+      if (existingChannel.lastActiveAt < thirtyDaysAgo) {
+        await existingChannel.related('members').detach()
+        await existingChannel.delete()
+      } else {
+        return response.conflict({
+          errors: [{ message: 'Channel name already exists' }],
+        })
+      }
     }
 
     const channel = await Channel.create({
