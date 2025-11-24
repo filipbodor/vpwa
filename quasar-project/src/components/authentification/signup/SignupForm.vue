@@ -153,7 +153,7 @@ async function submitForm() {
       position: 'top',
     })
 
-    await router.push('/')
+    window.location.href = '/'
   } catch (error: any) {
     console.error('Registration error:', error)
     $q.notify({

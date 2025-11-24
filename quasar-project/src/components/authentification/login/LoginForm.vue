@@ -110,7 +110,7 @@ async function submitForm() {
       position: 'top',
     })
 
-    await router.push('/')
+    window.location.href = '/'
   } catch (error: any) {
     console.error('Login error:', error)
     $q.notify({

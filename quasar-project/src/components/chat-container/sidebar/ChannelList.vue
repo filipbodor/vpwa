@@ -37,7 +37,7 @@
       <div
         v-for="ch in channels"
         :key="ch.id"
-        class="channel-item"
+        :class="['channel-item', { 'new-invite': ch.isNewInvite }]"
         @click="$emit('open', ch)"
       >
         <div class="channel-main">
@@ -50,9 +50,24 @@
           <span :class="['channel-name', { active: ch.id === currentChannelId }]">
             {{ ch.name }}
           </span>
+          <q-badge v-if="ch.isNewInvite" color="primary" label="INVITED" class="invited-badge" />
         </div>
-        <div class="channel-actions" v-if="isOwner(ch)">
+        <div class="channel-actions">
           <q-btn
+            v-if="!isOwner(ch)"
+            dense
+            flat
+            round
+            size="sm"
+            icon="logout"
+            color="grey-7"
+            @click.stop="$emit('leave', ch)"
+            class="leave-btn"
+          >
+            <q-tooltip>Leave channel</q-tooltip>
+          </q-btn>
+          <q-btn
+            v-if="isOwner(ch)"
             dense
             flat
             round
@@ -188,19 +203,36 @@ function isOwner(ch: Channel) {
   color: #611f69;
 }
 
+/* NEW: highlight new invites */
+.channel-item.new-invite {
+  background: rgba(33, 150, 243, 0.08);
+  border-left: 3px solid #2196f3;
+}
+
+.channel-item.new-invite:hover {
+  background: rgba(33, 150, 243, 0.15);
+}
+
 .invited-badge {
-  font-size: 11px;
+  font-size: 10px;
   padding: 2px 6px;
   font-weight: 600;
+  margin-left: 4px;
 }
 
 .channel-actions {
+  display: flex;
+  gap: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
 .channel-item:hover .channel-actions {
   opacity: 1;
+}
+
+.leave-btn:hover {
+  color: #f59e0b !important;
 }
 
 .delete-btn:hover {

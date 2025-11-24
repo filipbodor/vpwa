@@ -74,15 +74,26 @@ async function handleCreateChannel(payload: { name: string; description?: string
 }
 
 // Channel actions
-async function handleOpenChannel(ch: { id: string }) {
+async function handleOpenChannel(ch: { id: string; isNewInvite?: boolean }) {
   activeChannelId.value = ch.id
   activeDMId.value = ''
   await chat.openChannel(ch.id)
+  
+  // Clear invite flag if this was a new invitation
+  if (ch.isNewInvite) {
+    await chat.clearChannelInvite(ch.id)
+  }
 }
 
-async function handleLeaveChannel(ch: { id: string }) {
-  await chat.leaveChannel(ch.id)
-  if (activeChannelId.value === ch.id) activeChannelId.value = ''
+async function handleLeaveChannel(ch: { id: string; name?: string }) {
+  try {
+    await chat.leaveChannel(ch.id)
+    if (activeChannelId.value === ch.id) {
+      activeChannelId.value = ''
+    }
+  } catch (error) {
+    console.error('Failed to leave channel:', error)
+  }
 }
 
 async function handleDeleteChannel(ch: { id: string }) {

@@ -8,21 +8,45 @@ export const useChannelStore = defineStore('channels', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  const channelList = computed(() => Array.from(channels.value.values()).sort((a, b) => b.lastActiveAt - a.lastActiveAt))
+  const channelList = computed(() => {
+    // Sort channels: new invites first, then by last active
+    return Array.from(channels.value.values()).sort((a, b) => {
+      // New invites go to top
+      if (a.isNewInvite && !b.isNewInvite) return -1
+      if (!a.isNewInvite && b.isNewInvite) return 1
+      // Otherwise sort by last active
+      return b.lastActiveAt - a.lastActiveAt
+    })
+  })
   const publicChannels = computed(() => channelList.value.filter(ch => !ch.isPrivate))
   const privateChannels = computed(() => channelList.value.filter(ch => ch.isPrivate))
+  const newInviteChannels = computed(() => channelList.value.filter(ch => ch.isNewInvite))
 
   async function fetchMyChannels() {
     isLoading.value = true
     error.value = null
     try {
-      const channelList = await channelService.getMyChannels()
+      const { channels: channelList, users } = await channelService.getMyChannels()
+      channels.value.clear()
       channelList.forEach(channel => channels.value.set(channel.id, channel))
+      
+      const { useUserStore } = await import('./userStore')
+      const userStore = useUserStore()
+      userStore.addUsers(users as any)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch channels'
       throw e
     } finally {
       isLoading.value = false
+    }
+  }
+
+  async function fetchPublicChannels(): Promise<Channel[]> {
+    try {
+      return await channelService.getPublicChannels()
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to fetch public channels'
+      return []
     }
   }
 
@@ -42,8 +66,13 @@ export const useChannelStore = defineStore('channels', () => {
     isLoading.value = true
     error.value = null
     try {
-      const newChannel = await channelService.createChannel(data)
+      const { channel: newChannel, users } = await channelService.createChannel(data)
       channels.value.set(newChannel.id, newChannel)
+      
+      const { useUserStore } = await import('./userStore')
+      const userStore = useUserStore()
+      userStore.addUsers(users as any)
+      
       return newChannel
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to create channel'
@@ -103,6 +132,17 @@ export const useChannelStore = defineStore('channels', () => {
     }
   }
 
+  async function voteKick(channelId: string, userId: string): Promise<{ message: string; votes: number }> {
+    try {
+      const result = await channelService.voteKick(channelId, userId)
+      await fetchChannelById(channelId)
+      return result
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to vote kick user'
+      throw e
+    }
+  }
+
   function getChannelById(channelId: string): Channel | undefined {
     return channels.value.get(channelId)
   }
@@ -111,10 +151,23 @@ export const useChannelStore = defineStore('channels', () => {
     return channelList.value.find(ch => ch.name === name)
   }
 
+  async function clearInviteFlag(channelId: string) {
+    try {
+      await channelService.clearInviteFlag(channelId)
+      const channel = channels.value.get(channelId)
+      if (channel) {
+        channels.value.set(channelId, { ...channel, isNewInvite: false })
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to clear invite flag'
+      throw e
+    }
+  }
+
   return {
-    channels, isLoading, error, channelList, publicChannels, privateChannels,
-    fetchMyChannels, fetchChannelById, createChannel, joinChannel, leaveChannel,
-    deleteChannel, inviteUser, removeUser, getChannelById, findChannelByName
+    channels, isLoading, error, channelList, publicChannels, privateChannels, newInviteChannels,
+    fetchMyChannels, fetchPublicChannels, fetchChannelById, createChannel, joinChannel, leaveChannel,
+    deleteChannel, inviteUser, removeUser, voteKick, getChannelById, findChannelByName, clearInviteFlag
   }
 })
 

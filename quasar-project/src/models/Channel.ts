@@ -6,4 +6,5 @@ export interface Channel {
   ownerId: string
   memberIds: string[]
   lastActiveAt: number
+  isNewInvite?: boolean
 }

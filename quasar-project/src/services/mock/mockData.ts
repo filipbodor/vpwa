@@ -3,7 +3,7 @@ import type { User, Channel, DirectMessage, Message } from 'src/models'
 export const CURRENT_USER_ID = '550e8400-e29b-41d4-a716-446655440001'
 
 export const mockUsers: User[] = [
-  { id: '550e8400-e29b-41d4-a716-446655440001', firstName: 'Your', lastName: 'Name', fullName: 'Your Name', username: 'you', email: 'you@example.com', avatar: '👤', status: 'online' },
+  { id: '550e8400-e29b-41d4-a716-446655440001', firstName: 'John', lastName: 'Doe', fullName: 'John Doe', username: 'johndoe', email: 'john@example.com', avatar: '👤', status: 'online' },
   { id: '550e8400-e29b-41d4-a716-446655440002', firstName: 'Alice', lastName: 'Johnson', fullName: 'Alice Johnson', username: 'alice_j', email: 'alice@example.com', avatar: '👩', status: 'online' },
   { id: '550e8400-e29b-41d4-a716-446655440003', firstName: 'Bob', lastName: 'Smith', fullName: 'Bob Smith', username: 'bobsmith', email: 'bob@example.com', avatar: '👨', status: 'away' },
   { id: '550e8400-e29b-41d4-a716-446655440004', firstName: 'Charlie', lastName: 'Brown', fullName: 'Charlie Brown', username: 'charlieb', email: 'charlie@example.com', avatar: '🧑', status: 'busy' },
