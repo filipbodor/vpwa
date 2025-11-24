@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User, UserStatus } from 'src/models'
-import { userService } from 'src/services/api'
+import { authService } from 'src/services/api/authService'
+import type { LoginCredentials, RegisterData } from 'src/services/api/authService'
 
 export const useAuthStore = defineStore('auth', () => {
   const currentUser = ref<User | null>(null)
@@ -12,13 +13,44 @@ export const useAuthStore = defineStore('auth', () => {
   const currentUserId = computed(() => currentUser.value?.id || '')
   const userStatus = computed(() => currentUser.value?.status || 'offline')
 
+  async function login(credentials: LoginCredentials) {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await authService.login(credentials)
+      currentUser.value = response.user as User
+      return response
+    } catch (e: any) {
+      error.value = e.response?.data?.errors?.[0]?.message || e.message || 'Login failed'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function register(userData: RegisterData) {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await authService.register(userData)
+      currentUser.value = response.user as User
+      return response
+    } catch (e: any) {
+      error.value = e.response?.data?.errors?.[0]?.message || e.message || 'Registration failed'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function fetchCurrentUser() {
     isLoading.value = true
     error.value = null
     try {
-      currentUser.value = await userService.getCurrentUser()
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to fetch user'
+      const response = await authService.getCurrentUser()
+      currentUser.value = response.user as User
+    } catch (e: any) {
+      error.value = e.response?.data?.errors?.[0]?.message || e.message || 'Failed to fetch user'
       throw e
     } finally {
       isLoading.value = false
@@ -30,18 +62,47 @@ export const useAuthStore = defineStore('auth', () => {
     const oldStatus = currentUser.value.status
     currentUser.value.status = status
     try {
-      await userService.updateStatus(status)
-    } catch (e) {
+      const response = await authService.updateStatus(status)
+      currentUser.value = response.user as User
+    } catch (e: any) {
       currentUser.value.status = oldStatus
-      error.value = e instanceof Error ? e.message : 'Failed to update status'
+      error.value = e.response?.data?.errors?.[0]?.message || e.message || 'Failed to update status'
       throw e
     }
   }
 
-  function logout() {
-    currentUser.value = null
+  async function logout() {
+    isLoading.value = true
+    try {
+      await authService.logout()
+    } catch (e) {
+      console.error('Logout error:', e)
+    } finally {
+      currentUser.value = null
+      isLoading.value = false
+    }
   }
 
-  return { currentUser, isLoading, error, isAuthenticated, currentUserId, userStatus, fetchCurrentUser, updateUserStatus, logout }
+  function initializeFromStorage() {
+    const storedUser = authService.getStoredUser()
+    if (storedUser && authService.isAuthenticated()) {
+      currentUser.value = storedUser as User
+    }
+  }
+
+  return { 
+    currentUser, 
+    isLoading, 
+    error, 
+    isAuthenticated, 
+    currentUserId, 
+    userStatus, 
+    login,
+    register,
+    fetchCurrentUser, 
+    updateUserStatus, 
+    logout,
+    initializeFromStorage
+  }
 })
 

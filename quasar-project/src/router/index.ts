@@ -6,6 +6,7 @@ import {
   createWebHistory,
 } from 'vue-router';
 import routes from './routes';
+import { authService } from 'src/services/api/authService';
 
 /*
  * If not building with SSR mode, you can
@@ -31,6 +32,23 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE),
+  });
+
+  // Navigation guard for authentication
+  Router.beforeEach((to, from, next) => {
+    const isAuthenticated = authService.isAuthenticated();
+    const publicPages = ['/login', '/signup'];
+    const authRequired = !publicPages.includes(to.path);
+
+    if (authRequired && !isAuthenticated) {
+      return next('/login');
+    }
+
+    if (!authRequired && isAuthenticated) {
+      return next('/');
+    }
+
+    next();
   });
 
   return Router;

@@ -43,12 +43,12 @@
             <q-item v-for="member in members" :key="member.id" class="q-pa-md">
               <q-item-section avatar>
                 <q-avatar :color="getStatusColor(member.status)" text-color="white" size="40px">
-                  {{ member.avatar || member.name.charAt(0) }}
+                  {{ member.avatar || member.fullName.charAt(0) }}
                 </q-avatar>
               </q-item-section>
 
               <q-item-section>
-                <q-item-label class="text-weight-medium">{{ member.name }}</q-item-label>
+                <q-item-label class="text-weight-medium">{{ member.fullName }}</q-item-label>
                 <q-item-label caption>@{{ member.username }}</q-item-label>
               </q-item-section>
 

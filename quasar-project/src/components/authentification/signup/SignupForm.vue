@@ -78,7 +78,8 @@
           size="lg"
           class="full-width signup-btn q-mb-md"
           no-caps
-          to="/"
+          :loading="isLoading"
+          :disable="isLoading"
         />
       </q-form>
 
@@ -102,12 +103,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import type { QForm } from 'quasar'
 import AuthInput from 'src/components/authentification/shared/AuthInput.vue'
+import { useAuthStore } from 'src/stores/pinia-stores'
 
 const router = useRouter()
+const $q = useQuasar()
+const authStore = useAuthStore()
 const signupForm = ref<QForm | null>(null)
 
 const firstName = ref('')
@@ -116,20 +121,49 @@ const username = ref('')
 const email = ref('')
 const password = ref('')
 const repeatPassword = ref('')
-const showPassword = ref(false)
-
-const passwordInputType = computed<'text' | 'password'>(() =>
-  showPassword.value ? 'text' : 'password'
-)
+const isLoading = ref(false)
 
 async function submitForm() {
   if (!signupForm.value) return
 
   const valid = await signupForm.value.validate()
-  if (valid) {
+  if (!valid) {
+    $q.notify({
+      type: 'negative',
+      message: 'Please fill in all required fields correctly',
+      position: 'top',
+    })
+    return
+  }
+
+  isLoading.value = true
+
+  try {
+    await authStore.register({
+      firstName: firstName.value,
+      lastName: lastName.value,
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    })
+
+    $q.notify({
+      type: 'positive',
+      message: 'Account created successfully!',
+      position: 'top',
+    })
+
     await router.push('/')
-  } else {
-    console.log('Form is invalid!')
+  } catch (error: any) {
+    console.error('Registration error:', error)
+    $q.notify({
+      type: 'negative',
+      message: error?.response?.data?.errors?.[0]?.message || authStore.error || 'Registration failed. Please try again.',
+      position: 'top',
+      timeout: 3000,
+    })
+  } finally {
+    isLoading.value = false
   }
 }
 </script>

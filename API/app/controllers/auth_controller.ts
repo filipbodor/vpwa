@@ -7,6 +7,7 @@ export default class AuthController {
     const data = await request.validateUsing(registerValidator)
 
     const user = await User.create({
+      id: crypto.randomUUID(),
       firstName: data.firstName,
       lastName: data.lastName,
       username: data.username,

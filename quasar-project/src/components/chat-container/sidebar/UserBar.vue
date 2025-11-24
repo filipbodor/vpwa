@@ -78,7 +78,7 @@ import { useChat } from 'src/composables'
 const props = defineProps<{ username?: string }>()
 const chat = useChat()
 
-const username = computed(() => props.username || chat.currentUser.value?.name || 'Meno uzivatela')
+const username = computed(() => props.username || chat.currentUser.value?.fullName || 'Meno uzivatela')
 
 async function setStatus(s: 'online' | 'away' | 'busy' | 'offline') {
   try {
