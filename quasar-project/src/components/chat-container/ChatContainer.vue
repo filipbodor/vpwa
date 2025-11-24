@@ -84,11 +84,33 @@ watch(() => websocket.isConnected.value, (connected) => {
   }
 })
 
+watch(() => chat.userStatus.value, async (newStatus, oldStatus) => {
+  if (oldStatus === 'offline' && newStatus !== 'offline') {
+    console.log('[ChatContainer] User went online, reconnecting and refreshing...')
+    websocket.disconnect()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    websocket.connect()
+    
+    await chat.channels.value.forEach(async (channel) => {
+      if (chat.activeThread.value?.type === 'channel' && chat.activeThread.value.id === channel.id) {
+        const { useMessageStore } = await import('src/stores/pinia-stores')
+        await useMessageStore().fetchMessages({ type: 'channel', id: channel.id })
+      }
+    })
+  } else if (newStatus === 'offline' && oldStatus !== 'offline') {
+    console.log('[ChatContainer] User went offline, disconnecting...')
+    websocket.disconnect()
+  }
+})
+
 onMounted(async () => {
   try {
     await chat.initialize()
     await notifications.requestNotificationPermission()
-    websocket.connect()
+    
+    if (chat.userStatus.value !== 'offline') {
+      websocket.connect()
+    }
   } catch (error) {
     console.error('[ChatContainer] Init error:', error)
     Notify.create({ message: 'Failed to initialize chat', color: 'negative' })
