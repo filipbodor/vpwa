@@ -1,16 +1,20 @@
 <template>
-  <div class="chat-messages scroll q-pa-md" ref="chatContainer">
-    <q-infinite-scroll
-      :offset="50"
-      @load="loadMoreMessages"
-      scroll-target="chatContainer"
-      reverse
-    >
+  <q-scroll-area class="chat-messages" ref="scrollArea">
+    <div class="q-pa-md">
+      <q-infinite-scroll
+        :key="currentChatKey"
+        :offset="50"
+        @load="loadMoreMessages"
+        reverse
+      >
       <div
         v-for="(msg, index) in displayedMessages"
         :key="msg.id || index"
         class="message-wrapper"
-        :class="{ 'message-sent': msg.senderId === currentUserId }"
+        :class="{
+          'message-sent': msg.senderId === currentUserId,
+          'message-mentioned': isMentioned(msg)
+        }"
       >
         <div class="message-avatar">
           <q-avatar size="36px" color="primary" text-color="white">
@@ -24,31 +28,36 @@
           </div>
           <div
             class="message-bubble"
-            :class="{ 'message-bubble-sent': msg.senderId === currentUserId }"
+            :class="{
+              'message-bubble-sent': msg.senderId === currentUserId,
+              'message-bubble-mentioned': isMentioned(msg)
+            }"
+            v-html="formatMessageText(msg.text)"
           >
-            {{ msg.text }}
           </div>
         </div>
       </div>
 
-      <template v-slot:loading>
-        <div class="row justify-center q-my-md">
-          <q-spinner-dots color="primary" size="40px" />
-        </div>
-      </template>
-    </q-infinite-scroll>
-  </div>
+        <template v-slot:loading>
+          <div class="row justify-center q-my-md">
+            <q-spinner-dots color="primary" size="40px" />
+          </div>
+        </template>
+      </q-infinite-scroll>
+    </div>
+  </q-scroll-area>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
+import { QScrollArea } from 'quasar'
 
 const props = defineProps<{
-  messages: { id?: string; senderId: string; sender: string; text: string; timestamp?: number }[]
+  messages: { id?: string; senderId: string; sender: string; text: string; mentions?: string[]; timestamp?: number }[]
   currentUserId: string
 }>()
 
-const chatContainer = ref<HTMLElement | null>(null)
+const scrollArea = ref<QScrollArea | null>(null)
 const BATCH_SIZE = 20
 const loading = ref(false)
 
@@ -71,33 +80,52 @@ async function loadMoreMessages(index: number, done: (stop?: boolean) => void) {
     return
   }
 
-  // Simulate network delay
-  await new Promise(r => setTimeout(r, 300))
-
   const start = Math.max(0, totalMessages - alreadyLoaded - BATCH_SIZE)
   const end = totalMessages - alreadyLoaded
   const olderBatch = props.messages.slice(start, end)
 
-  const container = chatContainer.value
-  const scrollBefore = container?.scrollHeight || 0
+  if (olderBatch.length === 0) {
+    done(true)
+    loading.value = false
+    return
+  }
+
+  const scrollTarget = scrollArea.value?.getScrollTarget()
+  if (!scrollTarget) {
+    done(true)
+    loading.value = false
+    return
+  }
+
+  const scrollHeightBefore = scrollTarget.scrollHeight
+  const scrollTopBefore = scrollTarget.scrollTop
 
   displayedMessages.value = [...olderBatch, ...displayedMessages.value]
 
   await nextTick()
-  const scrollAfter = container?.scrollHeight || 0
+  
+  if (scrollArea.value) {
+    const scrollHeightAfter = scrollTarget.scrollHeight
+    const addedHeight = scrollHeightAfter - scrollHeightBefore
+    const newScrollTop = scrollTopBefore + addedHeight
+    
+    scrollArea.value.setScrollPosition('vertical', newScrollTop, 0)
+  }
 
-  // Maintain scroll position after prepending
-  if (container) container.scrollTop += scrollAfter - scrollBefore
-
-  done()
+  await nextTick()
+  
+  const hasMore = displayedMessages.value.length < totalMessages
+  done(!hasMore)
   loading.value = false
 }
 
 // Scroll to bottom
 async function scrollToBottom() {
   await nextTick()
-  const container = chatContainer.value
-  if (container) container.scrollTop = container.scrollHeight
+  if (scrollArea.value) {
+    const scrollTarget = scrollArea.value.getScrollTarget()
+    scrollArea.value.setScrollPosition('vertical', scrollTarget.scrollHeight, 300)
+  }
 }
 
 // Format timestamp
@@ -106,21 +134,67 @@ function formatTime(ts?: number) {
   return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
-// Watch for new messages
+function isMentioned(msg: { mentions?: string[] }) {
+  return msg.mentions?.includes(props.currentUserId) || false
+}
+
+function formatMessageText(text: string) {
+  const mentionPattern = /@(\w+)/g
+  return text.replace(mentionPattern, '<span class="mention">@$1</span>')
+}
+
+
 const currentChatKey = ref('')
+const isInitialLoad = ref(true)
+const shouldScrollToBottom = ref(false)
+
+function isNearBottom(): boolean {
+  if (!scrollArea.value) return true
+  const scrollTarget = scrollArea.value.getScrollTarget()
+  const scrollHeight = scrollTarget.scrollHeight
+  const scrollTop = scrollTarget.scrollTop
+  const clientHeight = scrollTarget.clientHeight
+  const threshold = 150
+  return scrollHeight - scrollTop - clientHeight < threshold
+}
+
 watch(
   () => props.messages,
   async (newMessages, oldMessages) => {
-    const newKey = JSON.stringify(newMessages.map(m => m.id))
-    if (newKey !== currentChatKey.value) {
+    if (!newMessages || newMessages.length === 0) {
+      displayedMessages.value = []
+      return
+    }
+
+    const firstMsgId = newMessages[0]?.id || ''
+    const lastMsgId = newMessages[newMessages.length - 1]?.id || ''
+    const newKey = `${firstMsgId}-${lastMsgId}-${newMessages.length}`
+    
+    const isSwitchingChat = oldMessages && oldMessages.length > 0 && 
+                            oldMessages[0]?.id !== firstMsgId
+
+    if (isSwitchingChat) {
+      loading.value = false
       displayedMessages.value = newMessages.slice(-BATCH_SIZE)
       currentChatKey.value = newKey
+      isInitialLoad.value = false
+      shouldScrollToBottom.value = true
+      await nextTick()
       await scrollToBottom()
+    } else if (isInitialLoad.value) {
+      displayedMessages.value = newMessages.slice(-BATCH_SIZE)
+      currentChatKey.value = newKey
+      isInitialLoad.value = false
+      shouldScrollToBottom.value = false
     } else {
       const newCount = newMessages.length - (oldMessages?.length || 0)
       if (newCount > 0) {
+        const wasNearBottom = isNearBottom()
         displayedMessages.value.push(...newMessages.slice(-newCount))
-        await scrollToBottom()
+        if (wasNearBottom) {
+          await nextTick()
+          await scrollToBottom()
+        }
       }
     }
   },
@@ -128,18 +202,24 @@ watch(
 )
 
 onMounted(async () => {
-  const container = chatContainer.value
-  if (!container) return
+  if (!scrollArea.value) return
 
-  // Start with last BATCH_SIZE messages
-  displayedMessages.value = props.messages.slice(-BATCH_SIZE)
+  if (displayedMessages.value.length === 0) {
+    displayedMessages.value = props.messages.slice(-BATCH_SIZE)
+  }
+  
+  await nextTick()
   await nextTick()
 
-  // Fill container until it scrolls
+  const scrollTarget = scrollArea.value.getScrollTarget()
+  
   const tryLoadOlder = async () => {
-    if (container.scrollHeight > container.clientHeight || displayedMessages.value.length >= props.messages.length) {
-      // container filled or all messages loaded
-      container.scrollTop = container.scrollHeight
+    if (scrollTarget.scrollHeight > scrollTarget.clientHeight || displayedMessages.value.length >= props.messages.length) {
+      if (shouldScrollToBottom.value || isInitialLoad.value) {
+        await scrollToBottom()
+      }
+      isInitialLoad.value = false
+      shouldScrollToBottom.value = false
       return
     }
 
@@ -148,16 +228,15 @@ onMounted(async () => {
     await tryLoadOlder()
   }
 
-  tryLoadOlder()
+  await tryLoadOlder()
 })
 </script>
 
 <style scoped>
 .chat-messages {
   flex: 1;
-  overflow-y: auto;
+  height: 100%;
   background-color: #ffffff;
-  padding: 20px;
 }
 .message-wrapper {
   display: flex;
@@ -216,5 +295,23 @@ onMounted(async () => {
 }
 .message-bubble-sent:hover {
   background: #4a154b;
+}
+.message-bubble-mentioned {
+  background: #fff8e1 !important;
+  color: #1d1c1d;
+}
+</style>
+
+<style>
+.mention {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.mention:hover {
+  background: #bbdefb;
 }
 </style>

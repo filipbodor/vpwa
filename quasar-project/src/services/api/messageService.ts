@@ -5,6 +5,7 @@ interface MessageResponse {
   id: string
   userId: string
   content: string
+  mentions?: string[]
   createdAt: number
   user: {
     id: string
@@ -41,6 +42,7 @@ export const messageService = {
         id: msg.id,
         senderId: msg.userId,
         text: msg.content,
+        mentions: msg.mentions || [],
         createdAt: msg.createdAt,
       }))
 
@@ -80,6 +82,7 @@ export const messageService = {
       id: msg.id,
       senderId: msg.userId,
       text: msg.content,
+      mentions: msg.mentions || [],
       createdAt: msg.createdAt,
     }
     

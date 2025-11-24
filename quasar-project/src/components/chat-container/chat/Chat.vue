@@ -22,9 +22,11 @@ const commands = useCommands()
 // computed messages include senderId, timestamp, etc.
 const messages = computed(() =>
   chat.activeMessages.value.map((m) => ({
+    id: m.id,
     senderId: m.senderId,
     sender: m.senderName,
     text: m.text,
+    mentions: m.mentions || [],
     timestamp: m.createdAt,
   }))
 )

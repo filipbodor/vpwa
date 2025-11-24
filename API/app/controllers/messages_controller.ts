@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Message from '#models/message'
 import Channel from '#models/channel'
+import User from '#models/user'
 import { DateTime } from 'luxon'
 import vine from '@vinejs/vine'
 
@@ -48,6 +49,7 @@ export default class MessagesController {
         id: msg.id,
         userId: msg.userId,
         content: msg.content,
+        mentions: msg.mentions || [],
         createdAt: msg.createdAt.toMillis(),
         user: {
           id: msg.user.id,
@@ -79,7 +81,6 @@ export default class MessagesController {
 
     await channel.load('members')
 
-    // Check if user is member
     const isMember = channel.members.some((m) => m.id === user.id)
     if (!isMember) {
       return response.forbidden({
@@ -87,14 +88,24 @@ export default class MessagesController {
       })
     }
 
+    const mentionPattern = /@(\w+)/g
+    const mentionMatches = [...data.content.matchAll(mentionPattern)]
+    const mentionedUsernames = [...new Set(mentionMatches.map(m => m[1]))]
+    
+    const mentionedUsers = await User.query()
+      .whereIn('username', mentionedUsernames)
+      .select('id')
+    
+    const mentionIds = mentionedUsers.map(u => u.id)
+
     const message = await Message.create({
       id: crypto.randomUUID(),
       channelId: channel.id,
       userId: user.id,
       content: data.content,
+      mentions: mentionIds,
     })
 
-    // Update channel last active time
     channel.lastActiveAt = DateTime.now()
     await channel.save()
 
@@ -105,6 +116,7 @@ export default class MessagesController {
         id: message.id,
         userId: message.userId,
         content: message.content,
+        mentions: message.mentions || [],
         createdAt: message.createdAt.toMillis(),
         user: {
           id: message.user.id,
