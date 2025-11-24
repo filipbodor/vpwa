@@ -9,5 +9,6 @@ export interface User {
   email?: string
   avatar?: string
   status: UserStatus
+  mentionsOnly?: boolean // Only receive notifications for @mentions
 }
 

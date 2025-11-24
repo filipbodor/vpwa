@@ -29,6 +29,7 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
+        mentionsOnly: user.mentionsOnly,
       },
       token: token.value!.release(),
     })
@@ -63,6 +64,7 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
+        mentionsOnly: user.mentionsOnly,
       },
       token: token.value!.release(),
     })
@@ -81,6 +83,7 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
+        mentionsOnly: user.mentionsOnly,
       },
     })
   }
@@ -123,6 +126,33 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
+        mentionsOnly: user.mentionsOnly,
+      },
+    })
+  }
+
+  async updateNotificationSettings({ auth, request, response }: HttpContext) {
+    const user = auth.user!
+    const { mentionsOnly } = request.only(['mentionsOnly'])
+
+    if (typeof mentionsOnly !== 'boolean') {
+      return response.badRequest({ message: 'mentionsOnly must be a boolean' })
+    }
+
+    user.mentionsOnly = mentionsOnly
+    await user.save()
+
+    return response.ok({
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        status: user.status,
+        mentionsOnly: user.mentionsOnly,
       },
     })
   }

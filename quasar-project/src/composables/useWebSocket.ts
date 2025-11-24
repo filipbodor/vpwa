@@ -186,7 +186,7 @@ export function useWebSocket() {
     if (!currentMessages.find(m => m.id === localMessage.id)) {
       messageStore.messagesByThread.set(`channel:${channelId}`, [...currentMessages, localMessage])
     }
-
+    
     if (message.senderId !== authStore.currentUserId) {
       notifications.showNotification(
         message.sender.fullName,
@@ -217,7 +217,7 @@ export function useWebSocket() {
     if (!currentMessages.find(m => m.id === localMessage.id)) {
       messageStore.messagesByThread.set(`dm:${directMessageId}`, [...currentMessages, localMessage])
     }
-
+    
     if (message.senderId !== authStore.currentUserId) {
       notifications.showNotification(
         message.sender.fullName,

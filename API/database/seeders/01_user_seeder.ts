@@ -13,6 +13,7 @@ export default class extends BaseSeeder {
         password: 'password123',
         avatar: '👤',
         status: 'online',
+        mentionsOnly: false,
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440002',
@@ -23,6 +24,7 @@ export default class extends BaseSeeder {
         password: 'password123',
         avatar: '👩',
         status: 'online',
+        mentionsOnly: false,
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440003',
@@ -32,7 +34,8 @@ export default class extends BaseSeeder {
         username: 'bob_smith',
         password: 'password123',
         avatar: '👨',
-        status: 'away',
+        status: 'dnd',
+        mentionsOnly: false,
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440004',
@@ -42,7 +45,8 @@ export default class extends BaseSeeder {
         username: 'carol_w',
         password: 'password123',
         avatar: '👩‍💼',
-        status: 'busy',
+        status: 'dnd',
+        mentionsOnly: true,
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440005',
@@ -53,6 +57,7 @@ export default class extends BaseSeeder {
         password: 'password123',
         avatar: '👸',
         status: 'offline',
+        mentionsOnly: false,
       },
     ])
 

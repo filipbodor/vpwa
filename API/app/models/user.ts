@@ -35,6 +35,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare status: 'online' | 'dnd' | 'offline'
 
+  @column()
+  declare mentionsOnly: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

@@ -12,9 +12,8 @@ export default class extends BaseSchema {
       table.string('email', 254).notNullable().unique()
       table.string('password').notNullable()
       table.string('avatar').nullable()
-      table.enum('status', ['online', 'away', 'busy', 'offline']).defaultTo('offline')
+      table.enum('status', ['online', 'dnd', 'offline']).defaultTo('offline')
       table.boolean('mentions_only').defaultTo(false)
-      table.boolean('notifications_enabled').defaultTo(true)
 
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()

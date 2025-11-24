@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => currentUser.value !== null)
   const currentUserId = computed(() => currentUser.value?.id || '')
   const userStatus = computed(() => currentUser.value?.status || 'offline')
+  const mentionsOnly = computed(() => currentUser.value?.mentionsOnly || false)
 
   async function login(credentials: LoginCredentials) {
     isLoading.value = true
@@ -114,6 +115,18 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function updateNotificationSettings(mentionsOnly: boolean) {
+    if (!currentUser.value) return
+    
+    try {
+      const response = await authService.updateNotificationSettings(mentionsOnly)
+      currentUser.value = response.user as User
+    } catch (e: any) {
+      error.value = e.response?.data?.errors?.[0]?.message || e.message || 'Failed to update notification settings'
+      throw e
+    }
+  }
+
   function initializeFromStorage() {
     const storedUser = authService.getStoredUser()
     if (storedUser && authService.isAuthenticated()) {
@@ -127,11 +140,13 @@ export const useAuthStore = defineStore('auth', () => {
     error, 
     isAuthenticated, 
     currentUserId, 
-    userStatus, 
+    userStatus,
+    mentionsOnly,
     login,
     register,
     fetchCurrentUser, 
     updateUserStatus,
+    updateNotificationSettings,
     logout,
     initializeFromStorage
   }

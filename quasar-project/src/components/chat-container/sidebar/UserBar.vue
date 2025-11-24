@@ -56,18 +56,31 @@
               <q-item-label caption>Not available</q-item-label>
             </q-item-section>
           </q-item>
+          <q-separator class="q-my-xs" />
+          <q-item clickable v-close-popup @click="showSettings = true" class="status-item">
+            <q-item-section avatar>
+              <q-icon name="settings" size="xs" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Notification Settings</q-item-label>
+            </q-item-section>
+          </q-item>
         </q-list>
       </q-menu>
     </q-btn>
+    
+    <UserSettingsDialog v-model="showSettings" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useChat } from 'src/composables'
+import UserSettingsDialog from './UserSettingsDialog.vue'
 
 const props = defineProps<{ username?: string }>()
 const chat = useChat()
+const showSettings = ref(false)
 
 const username = computed(() => props.username || chat.currentUser.value?.fullName || 'Meno uzivatela')
 
