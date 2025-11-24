@@ -28,8 +28,6 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
-        mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
       token: token.value!.release(),
     })
@@ -64,8 +62,6 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
-        mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
       token: token.value!.release(),
     })
@@ -84,8 +80,6 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
-        mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
     })
   }
@@ -105,8 +99,8 @@ export default class AuthController {
     const user = auth.user!
     const { status } = request.only(['status'])
 
-    if (!['online', 'away', 'busy', 'offline'].includes(status)) {
-      return response.badRequest({ message: 'Invalid status' })
+    if (!['online', 'dnd', 'offline'].includes(status)) {
+      return response.badRequest({ message: 'Invalid status. Must be: online, dnd, or offline' })
     }
 
     user.status = status
@@ -122,37 +116,6 @@ export default class AuthController {
         email: user.email,
         avatar: user.avatar,
         status: user.status,
-        mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
-      },
-    })
-  }
-
-  async updateNotificationSettings({ auth, request, response }: HttpContext) {
-    const user = auth.user!
-    const data = request.only(['mentionsOnly', 'notificationsEnabled'])
-
-    if (data.mentionsOnly !== undefined) {
-      user.mentionsOnly = data.mentionsOnly
-    }
-    if (data.notificationsEnabled !== undefined) {
-      user.notificationsEnabled = data.notificationsEnabled
-    }
-
-    await user.save()
-
-    return response.ok({
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        fullName: user.fullName,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        status: user.status,
-        mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
     })
   }

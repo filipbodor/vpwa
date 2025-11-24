@@ -94,11 +94,5 @@ export const authService = {
   isAuthenticated(): boolean {
     return !!this.getStoredToken()
   },
-
-  async updateNotificationSettings(settings: { notificationsEnabled?: boolean; mentionsOnly?: boolean }): Promise<UserResponse> {
-    const { data } = await apiClient.patch<UserResponse>('/auth/notifications', settings)
-    localStorage.setItem('current_user', JSON.stringify(data.user))
-    return data
-  },
 }
 

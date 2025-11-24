@@ -121,20 +121,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function updateNotificationSettings(settings: { notificationsEnabled?: boolean; mentionsOnly?: boolean }) {
-    isLoading.value = true
-    error.value = null
-    try {
-      const response = await authService.updateNotificationSettings(settings)
-      currentUser.value = response.user as User
-    } catch (e: any) {
-      error.value = e.response?.data?.errors?.[0]?.message || e.message || 'Failed to update settings'
-      throw e
-    } finally {
-      isLoading.value = false
-    }
-  }
-
   return { 
     currentUser, 
     isLoading, 
@@ -146,7 +132,6 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     fetchCurrentUser, 
     updateUserStatus,
-    updateNotificationSettings,
     logout,
     initializeFromStorage
   }

@@ -31,7 +31,6 @@ router.group(() => {
   router.get('/me', [AuthController, 'me']).use(middleware.auth())
   router.post('/logout', [AuthController, 'logout']).use(middleware.auth())
   router.patch('/status', [AuthController, 'updateStatus']).use(middleware.auth())
-  router.patch('/notifications', [AuthController, 'updateNotificationSettings']).use(middleware.auth())
 }).prefix('/auth')
 
 router.group(() => {

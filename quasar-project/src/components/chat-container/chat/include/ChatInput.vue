@@ -62,9 +62,9 @@ function sendMessage(message: string) {
 }
 
 function showNotif(message: string) {
-  // Silence notifications if user status is busy or offline
+  // Silence notifications if user status is dnd or offline
   const status = authStore.userStatus
-  if (status === 'busy' || status === 'offline') {
+  if (status === 'dnd' || status === 'offline') {
     console.log('[Notification silenced]:', message)
     return
   }
