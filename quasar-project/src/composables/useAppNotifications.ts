@@ -7,7 +7,8 @@ export function useAppNotifications() {
   function showNotification(
     sender: string,
     message: string,
-    avatar?: string
+    avatar?: string,
+    mentions?: string[]
   ) {
     if (!authStore.currentUser) return
 
@@ -16,6 +17,11 @@ export function useAppNotifications() {
 
     const isVisible = AppVisibility.appVisible
     if (isVisible) return
+
+    if (authStore.mentionsOnly) {
+      const currentUserId = authStore.currentUserId
+      if (!mentions || !mentions.includes(currentUserId)) return
+    }
 
     if (!('Notification' in window) || Notification.permission !== 'granted') return
 

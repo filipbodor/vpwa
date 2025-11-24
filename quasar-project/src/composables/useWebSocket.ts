@@ -191,7 +191,8 @@ export function useWebSocket() {
       notifications.showNotification(
         message.sender.fullName,
         message.content,
-        message.sender.avatar
+        message.sender.avatar,
+        message.mentions || []
       )
     }
   }
@@ -222,7 +223,8 @@ export function useWebSocket() {
       notifications.showNotification(
         message.sender.fullName,
         message.content,
-        message.sender.avatar
+        message.sender.avatar,
+        message.mentions || []
       )
     }
   }
@@ -240,8 +242,8 @@ export function useWebSocket() {
   }
 
   function handleNotification(data: any) {
-    const { title, body, avatar } = data
-    notifications.showNotification(title, body, avatar)
+    const { title, body, avatar, mentions } = data
+    notifications.showNotification(title, body, avatar, mentions)
   }
 
   function disconnect() {
