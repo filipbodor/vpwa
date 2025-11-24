@@ -19,14 +19,16 @@
 import ChatHeader from 'src/components/chat-container/header/ChatHeader.vue'
 import Sidebar from 'src/components/chat-container/sidebar/Sidebar.vue'
 import Chat from 'src/components/chat-container/chat/Chat.vue'
-import { ref, onMounted, computed } from 'vue'
-import { useChat } from 'src/composables'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
+import { useChat, useWebSocket, useAppNotifications } from 'src/composables'
 import { Notify } from 'quasar'
 
 const chatHeaderRef = ref(null)
 
 const leftDrawerOpen = ref(false)
 const chat = useChat()
+const websocket = useWebSocket()
+const notifications = useAppNotifications()
 
 const activeTitle = computed(() => {
   const thread = chat.activeThread.value
@@ -51,15 +53,52 @@ function openChannelInfo() {
   }
 }
 
+// Watch active thread and subscribe/unsubscribe to channels
+let previousChannelId = null
+watch(() => chat.activeThread.value, (newThread) => {
+  if (!websocket.isConnected.value) {
+    return
+  }
+
+  if (previousChannelId) {
+    websocket.unsubscribeFromChannel(previousChannelId)
+  }
+
+  if (newThread && newThread.type === 'channel') {
+    websocket.subscribeToChannel(newThread.id)
+    previousChannelId = newThread.id
+  } else {
+    previousChannelId = null
+  }
+})
+
+// Watch WebSocket connection and subscribe to channels when connected
+watch(() => websocket.isConnected.value, (connected) => {
+  if (connected) {
+    chat.channels.value.forEach(channel => {
+      websocket.subscribeToChannel(channel.id)
+    })
+    
+    if (chat.activeThread.value && chat.activeThread.value.type === 'channel') {
+      websocket.subscribeToChannel(chat.activeThread.value.id)
+      previousChannelId = chat.activeThread.value.id
+    }
+  }
+})
+
 onMounted(async () => {
-  console.log('Initializing chat...')
   try {
     await chat.initialize()
-    console.log('Chat initialized successfully')
+    await notifications.requestNotificationPermission()
+    websocket.connect()
   } catch (error) {
-    console.error('Failed to initialize chat:', error)
+    console.error('[ChatContainer] Init error:', error)
     Notify.create({ message: 'Failed to initialize chat', color: 'negative' })
   }
+})
+
+onUnmounted(() => {
+  websocket.disconnect()
 })
 </script>
 

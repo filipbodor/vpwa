@@ -9,6 +9,7 @@
 
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
+import transmit from '@adonisjs/transmit/services/main'
 
 const AuthController = () => import('#controllers/auth_controller')
 const ChannelsController = () => import('#controllers/channels_controller')
@@ -65,3 +66,6 @@ router.group(() => {
   router.get('/search', [UsersController, 'search'])
   router.get('/:id', [UsersController, 'show'])
 }).prefix('/users').use(middleware.auth())
+
+// WebSocket endpoint for real-time communication
+transmit.registerRoutes()

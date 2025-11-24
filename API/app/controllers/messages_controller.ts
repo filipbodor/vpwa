@@ -4,6 +4,7 @@ import Channel from '#models/channel'
 import User from '#models/user'
 import { DateTime } from 'luxon'
 import vine from '@vinejs/vine'
+import { WebSocketService } from '#services/websocket_service'
 
 const sendMessageValidator = vine.compile(
   vine.object({
@@ -110,6 +111,9 @@ export default class MessagesController {
     await channel.save()
 
     await message.load('user')
+
+    // Broadcast message to all channel members via WebSocket
+    await WebSocketService.broadcastChannelMessage(channelId, message, user)
 
     return response.created({
       message: {

@@ -48,7 +48,22 @@ export const useMessageStore = defineStore('messages', () => {
       const userStore = useUserStore()
       userStore.addUser(user)
       
-      await fetchMessages(thread)
+      // Add message optimistically to local store
+      // (it will also come via WebSocket but that's OK - we filter duplicates)
+      const currentMessages = messagesByThread.value.get(key) || []
+      const localMessage = {
+        id: newMessage.id,
+        senderId: newMessage.senderId,
+        text: newMessage.text,
+        createdAt: newMessage.createdAt,
+        mentions: newMessage.mentions || [],
+      }
+      
+      // Only add if not already present
+      if (!currentMessages.find(m => m.id === localMessage.id)) {
+        messagesByThread.value.set(key, [...currentMessages, localMessage])
+      }
+      
       return newMessage
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to send message'

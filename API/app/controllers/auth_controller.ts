@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import { registerValidator, loginValidator } from '#validators/auth'
+import { WebSocketService } from '#services/websocket_service'
 
 export default class AuthController {
   async register({ request, response }: HttpContext) {
@@ -90,6 +91,9 @@ export default class AuthController {
     user.status = 'offline'
     await user.save()
 
+    // Broadcast status change
+    await WebSocketService.broadcastStatusChange(user.id, 'offline')
+
     await User.accessTokens.delete(user, user.currentAccessToken.identifier)
 
     return response.ok({ message: 'Logged out successfully' })
@@ -105,6 +109,9 @@ export default class AuthController {
 
     user.status = status
     await user.save()
+
+    // Broadcast status change to all connected clients
+    await WebSocketService.broadcastStatusChange(user.id, status as 'online' | 'dnd' | 'offline')
 
     return response.ok({
       user: {

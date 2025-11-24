@@ -5,6 +5,7 @@ import User from '#models/user'
 import { DateTime } from 'luxon'
 import vine from '@vinejs/vine'
 import db from '@adonisjs/lucid/services/db'
+import { WebSocketService } from '#services/websocket_service'
 
 const createOrGetDMValidator = vine.compile(
   vine.object({
@@ -198,6 +199,12 @@ export default class DirectMessagesController {
     await dm.save()
 
     await message.load('user')
+
+    // Determine the recipient ID
+    const recipientId = dm.user1Id === user.id ? dm.user2Id : dm.user1Id
+
+    // Broadcast message to both users via WebSocket
+    await WebSocketService.broadcastDirectMessage(dmId, message, user, recipientId)
 
     return response.created({
       message: {
