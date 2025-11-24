@@ -34,11 +34,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/pinia-stores'
-
-const $q = useQuasar()
-const authStore = useAuthStore()
 
 const emit = defineEmits<{
   (e: 'send', message: string): void
@@ -50,37 +45,8 @@ function handleSend() {
   const value = text.value.trim()
   if (!value) return
 
-  sendMessage(value)
-  showNotif(value)
-
+  emit('send', value)
   text.value = ''
-}
-
-function sendMessage(message: string) {
-  console.log('sendMessage called', message, new Date().toISOString())
-  emit('send', message)
-}
-
-function showNotif(message: string) {
-  // Silence notifications if user status is dnd or offline
-  const status = authStore.userStatus
-  if (status === 'dnd' || status === 'offline') {
-    console.log('[Notification silenced]:', message)
-    return
-  }
-
-  $q.notify({
-  message,
-  caption: 'You sent this just now',
-  classes: 'my-slack-notif',
-  position: 'top-right',
-  avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
-  timeout: 2500,
-  progress: true,      
-  actions: [
-    { icon: 'close', color: 'white', handler: () => {} }
-  ]
-})
 }
 </script>
 

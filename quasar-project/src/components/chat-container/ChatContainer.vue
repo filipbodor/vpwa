@@ -53,7 +53,6 @@ function openChannelInfo() {
   }
 }
 
-// Watch active thread and subscribe/unsubscribe to channels
 let previousChannelId = null
 watch(() => chat.activeThread.value, (newThread) => {
   if (!websocket.isConnected.value) {
@@ -72,7 +71,6 @@ watch(() => chat.activeThread.value, (newThread) => {
   }
 })
 
-// Watch WebSocket connection and subscribe to channels when connected
 watch(() => websocket.isConnected.value, (connected) => {
   if (connected) {
     chat.channels.value.forEach(channel => {
