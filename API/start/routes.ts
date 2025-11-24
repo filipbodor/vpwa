@@ -42,6 +42,7 @@ router.group(() => {
   router.post('/:id/leave', [ChannelsController, 'leave'])
   router.post('/:id/invite', [ChannelsController, 'invite'])
   router.post('/:id/kick', [ChannelsController, 'kick'])
+  router.post('/:id/vote-kick', [ChannelsController, 'voteKick'])
   router.delete('/:id', [ChannelsController, 'destroy'])
   router.post('/:id/clear-invite', [ChannelsController, 'clearInvite'])
   

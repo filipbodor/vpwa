@@ -147,6 +147,11 @@ export const channelService = {
     await apiClient.post(`/channels/${channelId}/kick`, { userId })
   },
 
+  async voteKick(channelId: string, userId: string): Promise<{ message: string; votes: number }> {
+    const { data } = await apiClient.post<{ message: string; votes: number }>(`/channels/${channelId}/vote-kick`, { userId })
+    return data
+  },
+
   async clearInviteFlag(channelId: string): Promise<void> {
     await apiClient.post(`/channels/${channelId}/clear-invite`)
   },

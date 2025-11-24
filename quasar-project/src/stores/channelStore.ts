@@ -41,6 +41,15 @@ export const useChannelStore = defineStore('channels', () => {
     }
   }
 
+  async function fetchPublicChannels(): Promise<Channel[]> {
+    try {
+      return await channelService.getPublicChannels()
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to fetch public channels'
+      return []
+    }
+  }
+
   async function fetchChannelById(channelId: string) {
     if (channels.value.has(channelId)) return channels.value.get(channelId)!
     try {
@@ -123,6 +132,17 @@ export const useChannelStore = defineStore('channels', () => {
     }
   }
 
+  async function voteKick(channelId: string, userId: string): Promise<{ message: string; votes: number }> {
+    try {
+      const result = await channelService.voteKick(channelId, userId)
+      await fetchChannelById(channelId)
+      return result
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to vote kick user'
+      throw e
+    }
+  }
+
   function getChannelById(channelId: string): Channel | undefined {
     return channels.value.get(channelId)
   }
@@ -146,8 +166,8 @@ export const useChannelStore = defineStore('channels', () => {
 
   return {
     channels, isLoading, error, channelList, publicChannels, privateChannels, newInviteChannels,
-    fetchMyChannels, fetchChannelById, createChannel, joinChannel, leaveChannel,
-    deleteChannel, inviteUser, removeUser, getChannelById, findChannelByName, clearInviteFlag
+    fetchMyChannels, fetchPublicChannels, fetchChannelById, createChannel, joinChannel, leaveChannel,
+    deleteChannel, inviteUser, removeUser, voteKick, getChannelById, findChannelByName, clearInviteFlag
   }
 })
 

@@ -1,5 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Channel from '#models/channel'
+import ChannelBan from '#models/channel_ban'
+import ChannelKickVote from '#models/channel_kick_vote'
 import { DateTime } from 'luxon'
 import { createChannelValidator, inviteUserValidator, kickUserValidator } from '#validators/channel'
 import db from '@adonisjs/lucid/services/db'
@@ -185,6 +187,18 @@ export default class ChannelsController {
       })
     }
 
+    // Check if user is banned
+    const ban = await ChannelBan.query()
+      .where('channel_id', channel.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (ban) {
+      return response.forbidden({
+        errors: [{ message: 'You are banned from this channel' }],
+      })
+    }
+
     await channel.load('members')
 
     // Check if already a member
@@ -283,6 +297,28 @@ export default class ChannelsController {
       })
     }
 
+    // Check if user is banned
+    const ban = await ChannelBan.query()
+      .where('channel_id', channel.id)
+      .where('user_id', data.userId)
+      .first()
+
+    if (ban) {
+      // Only owner can unban
+      if (channel.ownerId !== user.id) {
+        return response.forbidden({
+          errors: [{ message: 'This user is banned from the channel. Only the owner can unban them.' }],
+        })
+      }
+
+      // Owner inviting = unban + invite
+      await ban.delete()
+      await ChannelKickVote.query()
+        .where('channel_id', channel.id)
+        .where('user_id', data.userId)
+        .delete()
+    }
+
     await channel.related('members').attach({
       [data.userId]: {
         is_invited: true,
@@ -291,7 +327,7 @@ export default class ChannelsController {
     })
 
     return response.ok({
-      message: 'User invited successfully',
+      message: ban ? 'User unbanned and invited successfully' : 'User invited successfully',
     })
   }
 
@@ -332,10 +368,134 @@ export default class ChannelsController {
       })
     }
 
+    // Remove from channel
     await channel.related('members').detach([data.userId])
 
+    // Create permanent ban
+    await ChannelBan.updateOrCreate(
+      {
+        channelId: channel.id,
+        userId: data.userId,
+      },
+      {
+        bannedBy: user.id,
+        banType: 'owner',
+        voteCount: 0,
+      }
+    )
+
+    // Clear any existing votes
+    await ChannelKickVote.query()
+      .where('channel_id', channel.id)
+      .where('user_id', data.userId)
+      .delete()
+
     return response.ok({
-      message: 'User kicked successfully',
+      message: 'User kicked and banned permanently',
+    })
+  }
+
+  /**
+   * Vote to kick user from channel
+   */
+  async voteKick({ auth, params, request, response }: HttpContext) {
+    const user = auth.user!
+    const data = await request.validateUsing(kickUserValidator)
+    const channel = await Channel.find(params.id)
+
+    if (!channel) {
+      return response.notFound({
+        errors: [{ message: 'Channel not found' }],
+      })
+    }
+
+    // Cannot vote kick in private channels (only owner can kick)
+    if (channel.isPrivate) {
+      return response.forbidden({
+        errors: [{ message: 'Vote kick is not available in private channels' }],
+      })
+    }
+
+    await channel.load('members')
+
+    // Check if voter is member
+    if (!channel.members.some((m) => m.id === user.id)) {
+      return response.forbidden({
+        errors: [{ message: 'You must be a member to vote' }],
+      })
+    }
+
+    // Cannot vote kick owner
+    if (data.userId === channel.ownerId) {
+      return response.badRequest({
+        errors: [{ message: 'Cannot kick the channel owner' }],
+      })
+    }
+
+    // Check if target user is member
+    if (!channel.members.some((m) => m.id === data.userId)) {
+      return response.badRequest({
+        errors: [{ message: 'User is not a member of this channel' }],
+      })
+    }
+
+    // Cannot vote for yourself
+    if (data.userId === user.id) {
+      return response.badRequest({
+        errors: [{ message: 'Cannot vote to kick yourself' }],
+      })
+    }
+
+    // Record vote
+    await ChannelKickVote.updateOrCreate(
+      {
+        channelId: channel.id,
+        userId: data.userId,
+        votedBy: user.id,
+      },
+      {}
+    )
+
+    // Count total votes
+    const voteCount = await ChannelKickVote.query()
+      .where('channel_id', channel.id)
+      .where('user_id', data.userId)
+      .count('* as total')
+
+    const totalVotes = Number(voteCount[0].$extras.total)
+
+    // If 3 or more votes, kick and ban
+    if (totalVotes >= 3) {
+      await channel.related('members').detach([data.userId])
+
+      // Create permanent ban
+      await ChannelBan.updateOrCreate(
+        {
+          channelId: channel.id,
+          userId: data.userId,
+        },
+        {
+          bannedBy: user.id,
+          banType: 'vote',
+          voteCount: totalVotes,
+        }
+      )
+
+      // Clear votes
+      await ChannelKickVote.query()
+        .where('channel_id', channel.id)
+        .where('user_id', data.userId)
+        .delete()
+
+      return response.ok({
+        message: 'User has been kicked and banned (3+ votes)',
+        votes: totalVotes,
+      })
+    }
+
+    return response.ok({
+      message: `Vote recorded (${totalVotes}/3 votes)`,
+      votes: totalVotes,
     })
   }
 
