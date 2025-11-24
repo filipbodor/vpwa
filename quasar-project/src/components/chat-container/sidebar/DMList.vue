@@ -51,7 +51,7 @@ interface DMView {
   userId: string
   name: string
   avatar?: string
-  status?: 'online' | 'away' | 'busy' | 'offline'
+  status?: 'online' | 'dnd' | 'offline'
   lastMessageAt?: number
   icon?: string
 }

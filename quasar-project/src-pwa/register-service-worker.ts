@@ -43,3 +43,12 @@ register(process.env.SERVICE_WORKER_FILE, {
     console.error('Error during service worker registration:', err)
   },
 });
+
+// Handle notification clicks - focus the app when notification is clicked
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'notification-click') {
+      window.focus();
+    }
+  });
+}

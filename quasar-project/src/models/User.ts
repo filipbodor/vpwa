@@ -1,4 +1,4 @@
-export type UserStatus = 'online' | 'away' | 'busy' | 'offline'
+export type UserStatus = 'online' | 'dnd' | 'offline'
 
 export interface User {
   id: string
@@ -9,7 +9,6 @@ export interface User {
   email?: string
   avatar?: string
   status: UserStatus
-  mentionsOnly?: boolean
-  notificationsEnabled?: boolean
+  mentionsOnly?: boolean // Only receive notifications for @mentions
 }
 

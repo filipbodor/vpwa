@@ -24,6 +24,7 @@ export interface AuthResponse {
     email: string
     avatar?: string
     status: UserStatus
+    mentionsOnly?: boolean
   }
   token: string
 }
@@ -38,6 +39,7 @@ export interface UserResponse {
     email: string
     avatar?: string
     status: UserStatus
+    mentionsOnly?: boolean
   }
 }
 
@@ -68,6 +70,12 @@ export const authService = {
     return data
   },
 
+  async updateNotificationSettings(mentionsOnly: boolean): Promise<UserResponse> {
+    const { data } = await apiClient.patch<UserResponse>('/auth/notifications', { mentionsOnly })
+    localStorage.setItem('current_user', JSON.stringify(data.user))
+    return data
+  },
+
   async logout(): Promise<void> {
     try {
       await apiClient.post('/auth/logout')
@@ -93,12 +101,6 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return !!this.getStoredToken()
-  },
-
-  async updateNotificationSettings(settings: { notificationsEnabled?: boolean; mentionsOnly?: boolean }): Promise<UserResponse> {
-    const { data } = await apiClient.patch<UserResponse>('/auth/notifications', settings)
-    localStorage.setItem('current_user', JSON.stringify(data.user))
-    return data
   },
 }
 

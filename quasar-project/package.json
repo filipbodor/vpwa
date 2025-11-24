@@ -17,6 +17,7 @@
     "postinstall": "quasar prepare"
   },
   "dependencies": {
+    "@adonisjs/transmit-client": "^1.0.0",
     "@quasar/extras": "^1.17.0",
     "axios": "^1.13.2",
     "pinia": "^3.0.3",

@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import { registerValidator, loginValidator } from '#validators/auth'
+import { WebSocketService } from '#services/websocket_service'
 
 export default class AuthController {
   async register({ request, response }: HttpContext) {
@@ -29,7 +30,6 @@ export default class AuthController {
         avatar: user.avatar,
         status: user.status,
         mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
       token: token.value!.release(),
     })
@@ -65,7 +65,6 @@ export default class AuthController {
         avatar: user.avatar,
         status: user.status,
         mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
       token: token.value!.release(),
     })
@@ -85,7 +84,6 @@ export default class AuthController {
         avatar: user.avatar,
         status: user.status,
         mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
     })
   }
@@ -96,6 +94,9 @@ export default class AuthController {
     user.status = 'offline'
     await user.save()
 
+    // Broadcast status change
+    await WebSocketService.broadcastStatusChange(user.id, 'offline')
+
     await User.accessTokens.delete(user, user.currentAccessToken.identifier)
 
     return response.ok({ message: 'Logged out successfully' })
@@ -105,12 +106,15 @@ export default class AuthController {
     const user = auth.user!
     const { status } = request.only(['status'])
 
-    if (!['online', 'away', 'busy', 'offline'].includes(status)) {
-      return response.badRequest({ message: 'Invalid status' })
+    if (!['online', 'dnd', 'offline'].includes(status)) {
+      return response.badRequest({ message: 'Invalid status. Must be: online, dnd, or offline' })
     }
 
     user.status = status
     await user.save()
+
+    // Broadcast status change to all connected clients
+    await WebSocketService.broadcastStatusChange(user.id, status as 'online' | 'dnd' | 'offline')
 
     return response.ok({
       user: {
@@ -123,22 +127,19 @@ export default class AuthController {
         avatar: user.avatar,
         status: user.status,
         mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
     })
   }
 
   async updateNotificationSettings({ auth, request, response }: HttpContext) {
     const user = auth.user!
-    const data = request.only(['mentionsOnly', 'notificationsEnabled'])
+    const { mentionsOnly } = request.only(['mentionsOnly'])
 
-    if (data.mentionsOnly !== undefined) {
-      user.mentionsOnly = data.mentionsOnly
-    }
-    if (data.notificationsEnabled !== undefined) {
-      user.notificationsEnabled = data.notificationsEnabled
+    if (typeof mentionsOnly !== 'boolean') {
+      return response.badRequest({ message: 'mentionsOnly must be a boolean' })
     }
 
+    user.mentionsOnly = mentionsOnly
     await user.save()
 
     return response.ok({
@@ -152,7 +153,6 @@ export default class AuthController {
         avatar: user.avatar,
         status: user.status,
         mentionsOnly: user.mentionsOnly,
-        notificationsEnabled: user.notificationsEnabled,
       },
     })
   }

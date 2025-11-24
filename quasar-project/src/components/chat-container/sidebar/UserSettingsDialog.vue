@@ -2,34 +2,26 @@
   <q-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)">
     <q-card style="min-width: 400px">
       <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">User Settings</div>
+        <div class="text-h6">Notification Settings</div>
         <q-space />
         <q-btn icon="close" flat round dense v-close-popup />
       </q-card-section>
 
       <q-card-section>
-        <div class="q-gutter-md">
+        <div class="q-mb-md">
+          <div class="text-subtitle2 q-mb-sm">Notification Preferences</div>
           <q-toggle
-            v-model="notificationsEnabled"
-            label="Enable Notifications"
+            :model-value="localMentionsOnly"
+            @update:model-value="handleToggle"
+            label="Only notify me for @mentions"
             color="primary"
+            :disable="isLoading"
           />
-
-          <q-toggle
-            v-model="mentionsOnly"
-            label="Mentions Only"
-            color="primary"
-            :disable="!notificationsEnabled"
-          />
-          <div class="text-caption text-grey-7 q-ml-lg" v-if="notificationsEnabled">
-            When enabled, you'll only receive notifications for messages that mention you
-          </div>
         </div>
       </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="grey-7" v-close-popup />
-        <q-btn label="Save" color="primary" @click="handleSave" />
+      <q-card-actions align="right" class="q-px-md q-pb-md">
+        <q-btn flat label="Close" color="primary" v-close-popup />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -45,42 +37,45 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
+  (e: 'update:modelValue', value: boolean): void
 }>()
 
 const authStore = useAuthStore()
+const localMentionsOnly = ref(authStore.mentionsOnly)
+const isLoading = ref(false)
 
-const notificationsEnabled = ref(authStore.currentUser?.notificationsEnabled !== false)
-const mentionsOnly = ref(authStore.currentUser?.mentionsOnly || false)
-
-watch(() => props.modelValue, (newVal) => {
-  if (newVal && authStore.currentUser) {
-    notificationsEnabled.value = authStore.currentUser.notificationsEnabled !== false
-    mentionsOnly.value = authStore.currentUser.mentionsOnly || false
-  }
+watch(() => authStore.mentionsOnly, (newVal) => {
+  localMentionsOnly.value = newVal
 })
 
-async function handleSave() {
+async function handleToggle(value: boolean) {
+  isLoading.value = true
   try {
-    await authStore.updateNotificationSettings({
-      notificationsEnabled: notificationsEnabled.value,
-      mentionsOnly: mentionsOnly.value,
-    })
-
+    await authStore.updateNotificationSettings(value)
+    localMentionsOnly.value = value
     Notify.create({
-      message: 'Settings saved successfully',
+      message: 'Notification settings updated',
       color: 'positive',
       position: 'top',
+      timeout: 2000,
     })
-
-    emit('update:modelValue', false)
   } catch (error) {
+    console.error('Failed to update notification settings:', error)
     Notify.create({
-      message: 'Failed to save settings',
+      message: 'Failed to update settings',
       color: 'negative',
       position: 'top',
+      timeout: 2000,
     })
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
+
+<style scoped>
+.text-subtitle2 {
+  font-weight: 600;
+}
+</style>
 

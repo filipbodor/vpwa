@@ -38,22 +38,13 @@
               <q-item-label caption>Active</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="setStatus('away')" class="status-item">
-            <q-item-section avatar>
-              <q-badge color="amber-6" rounded class="status-indicator" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Away</q-item-label>
-              <q-item-label caption>Stepped away</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-item clickable v-close-popup @click="setStatus('busy')" class="status-item">
+          <q-item clickable v-close-popup @click="setStatus('dnd')" class="status-item">
             <q-item-section avatar>
               <q-badge color="red-6" rounded class="status-indicator" />
             </q-item-section>
             <q-item-section>
-              <q-item-label>Busy</q-item-label>
-              <q-item-label caption>Do not disturb</q-item-label>
+              <q-item-label>Do Not Disturb</q-item-label>
+              <q-item-label caption>No notifications</q-item-label>
             </q-item-section>
           </q-item>
           <q-item clickable v-close-popup @click="setStatus('offline')" class="status-item">
@@ -65,13 +56,13 @@
               <q-item-label caption>Not available</q-item-label>
             </q-item-section>
           </q-item>
-          <q-separator />
+          <q-separator class="q-my-xs" />
           <q-item clickable v-close-popup @click="showSettings = true" class="status-item">
             <q-item-section avatar>
-              <q-icon name="settings" size="20px" />
+              <q-icon name="settings" size="xs" />
             </q-item-section>
             <q-item-section>
-              <q-item-label>Settings</q-item-label>
+              <q-item-label>Notification Settings</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
@@ -93,7 +84,7 @@ const showSettings = ref(false)
 
 const username = computed(() => props.username || chat.currentUser.value?.fullName || 'Meno uzivatela')
 
-async function setStatus(s: 'online' | 'away' | 'busy' | 'offline') {
+async function setStatus(s: 'online' | 'dnd' | 'offline') {
   try {
     await chat.updateStatus(s)
   } catch (error) {
@@ -113,8 +104,7 @@ function getInitials(name: string) {
 const statusColor = computed(() => {
   switch (chat.userStatus.value) {
     case 'online': return 'green-6'
-    case 'away': return 'amber-6'
-    case 'busy': return 'red-6'
+    case 'dnd': return 'red-6'
     case 'offline': return 'grey-5'
     default: return 'grey-5'
   }
@@ -122,9 +112,8 @@ const statusColor = computed(() => {
 
 const statusLabel = computed(() => {
   switch (chat.userStatus.value) {
-    case 'online': return 'Active'
-    case 'away': return 'Away'
-    case 'busy': return 'Busy'
+    case 'online': return 'Online'
+    case 'dnd': return 'Do Not Disturb'
     case 'offline': return 'Offline'
     default: return 'Offline'
   }

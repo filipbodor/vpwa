@@ -120,7 +120,7 @@ const members = computed(() => {
         if (props.channelInfo!.ownerId === a.id) return -1
       if (props.channelInfo!.ownerId === b.id) return 1
 
-      const statusOrder: Record<UserStatus, number> = { online: 0, away: 1, busy: 2, offline: 3 }
+      const statusOrder: Record<UserStatus, number> = { online: 0, dnd: 1, offline: 2 }
       return statusOrder[a.status] - statusOrder[b.status]
     })
 })
@@ -128,8 +128,7 @@ const members = computed(() => {
 function getStatusColor(status: UserStatus): string {
   const colors: Record<UserStatus, string> = {
     online: 'positive',
-    away: 'warning',
-    busy: 'negative',
+    dnd: 'negative',
     offline: 'grey'
   }
   return colors[status]

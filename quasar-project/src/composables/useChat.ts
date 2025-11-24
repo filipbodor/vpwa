@@ -31,7 +31,7 @@ export function useChat() {
           userId: string
           name: string
           avatar?: string
-          status?: 'online' | 'away' | 'busy' | 'offline'
+          status?: 'online' | 'dnd' | 'offline'
           lastMessageAt?: number
         } = {
           id: dm.id,
@@ -155,7 +155,7 @@ export function useChat() {
     }
   }
 
-  async function updateStatus(status: 'online' | 'away' | 'busy' | 'offline') {
+  async function updateStatus(status: 'online' | 'dnd' | 'offline') {
     try {
       await authStore.updateUserStatus(status)
     } catch (error) {

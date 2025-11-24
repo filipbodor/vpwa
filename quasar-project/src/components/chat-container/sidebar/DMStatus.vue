@@ -9,13 +9,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps<{ status: 'online' | 'away' | 'busy' | 'offline' }>()
+const props = defineProps<{ status: 'online' | 'dnd' | 'offline' }>()
 
 const color = computed(() => {
   switch (props.status) {
     case 'online': return 'green-6'
-    case 'away': return 'amber-6'
-    case 'busy': return 'red-6'
+    case 'dnd': return 'red-6'
+    case 'offline': return 'grey-5'
     default: return 'grey-5'
   }
 })
