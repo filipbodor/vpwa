@@ -9,6 +9,7 @@
         placeholder="Message..."
         bg-color="white"
         @keyup.enter="handleSend"
+        @update:model-value="handleInput"
       >
         <template v-slot:prepend>
           <q-btn flat dense round size="sm" icon="add_circle_outline" color="grey-7" class="q-mr-xs" />
@@ -33,21 +34,88 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
+import { typingService } from 'src/services/api'
+
+const props = defineProps<{
+  channelId?: string
+}>()
 
 const emit = defineEmits<{
   (e: 'send', message: string): void
 }>()
 
 const text = ref('')
+let typingTimeout: NodeJS.Timeout | null = null
+let isTyping = false
+
+async function sendTypingStatus(typing: boolean) {
+  if (!props.channelId) return
+  
+  try {
+    await typingService.sendTyping(props.channelId, typing, typing ? text.value : '')
+    isTyping = typing
+  } catch (error) {
+    console.error('[ChatInput] Failed to send typing status:', error)
+  }
+}
+
+function handleInput() {
+  if (!props.channelId) return
+  
+  if (!isTyping) {
+    sendTypingStatus(true)
+  }
+  
+  if (typingTimeout) {
+    clearTimeout(typingTimeout)
+  }
+  
+  typingTimeout = setTimeout(() => {
+    sendTypingStatus(false)
+  }, 3000)
+}
+
+watch(text, (newValue, oldValue) => {
+  if (!props.channelId) return
+  if (newValue === oldValue) return
+  
+  if (newValue.length > 0) {
+    sendTypingStatus(true)
+    
+    if (typingTimeout) {
+      clearTimeout(typingTimeout)
+    }
+    
+    typingTimeout = setTimeout(() => {
+      sendTypingStatus(false)
+    }, 3000)
+  } else if (isTyping) {
+    sendTypingStatus(false)
+  }
+})
 
 function handleSend() {
   const value = text.value.trim()
   if (!value) return
 
+  if (typingTimeout) {
+    clearTimeout(typingTimeout)
+  }
+  sendTypingStatus(false)
+  
   emit('send', value)
   text.value = ''
 }
+
+onUnmounted(() => {
+  if (typingTimeout) {
+    clearTimeout(typingTimeout)
+  }
+  if (isTyping && props.channelId) {
+    sendTypingStatus(false)
+  }
+})
 </script>
 
 <style scoped>

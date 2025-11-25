@@ -1,7 +1,9 @@
 <template>
   <q-page class="chat-page column">
     <ChatMessage :messages="messages" :current-user-id="chat.currentUserId.value" />
-    <ChatInput @send="handleSendMessage" />
+    <TypingIndicator v-if="activeChannelId" :channel-id="activeChannelId" />
+    <ChatInput v-if="activeChannelId" :channel-id="activeChannelId" @send="handleSendMessage" />
+    <ChatInput v-else @send="handleSendMessage" />
   </q-page>
 </template>
 
@@ -9,6 +11,7 @@
 import { computed } from 'vue'
 import ChatMessage from 'src/components/chat-container/chat/include/ChatMessage.vue'
 import ChatInput from 'src/components/chat-container/chat/include/ChatInput.vue'
+import TypingIndicator from 'src/components/chat-container/chat/include/TypingIndicator.vue'
 import { useChat, useCommands } from 'src/composables'
 import { Notify } from 'quasar'
 
@@ -18,6 +21,11 @@ const emit = defineEmits<{
 
 const chat = useChat()
 const commands = useCommands()
+
+const activeChannelId = computed(() => {
+  const thread = chat.activeThread.value
+  return thread?.type === 'channel' ? thread.id : undefined
+})
 
 // computed messages include senderId, timestamp, etc.
 const messages = computed(() =>

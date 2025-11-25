@@ -16,6 +16,7 @@ const ChannelsController = () => import('#controllers/channels_controller')
 const MessagesController = () => import('#controllers/messages_controller')
 const DirectMessagesController = () => import('#controllers/direct_messages_controller')
 const UsersController = () => import('#controllers/users_controller')
+const TypingController = () => import('#controllers/typing_controller')
 
 router.get('/', async () => {
   return {
@@ -68,5 +69,6 @@ router.group(() => {
   router.get('/:id', [UsersController, 'show'])
 }).prefix('/users').use(middleware.auth())
 
-// WebSocket endpoint for real-time communication
+router.post('/typing', [TypingController, 'broadcastTyping']).use(middleware.auth())
+
 transmit.registerRoutes()
