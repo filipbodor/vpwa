@@ -41,7 +41,6 @@
 import { computed, ref } from 'vue'
 import UserBar from 'src/components/chat-container/sidebar/UserBar.vue'
 import ChannelList from 'src/components/chat-container/sidebar/ChannelList.vue'
-import DMList from 'src/components/chat-container/sidebar/DMList.vue'
 import CreateChannelDialog from 'src/components/chat-container/sidebar/CreateChannelDialog.vue'
 import { useChat } from 'src/composables'
 

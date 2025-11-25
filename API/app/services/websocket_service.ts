@@ -133,5 +133,16 @@ export class WebSocketService {
     const userChannel = `users/${userId}`
     transmit.broadcast(userChannel, payload)
   }
+  static async broadcastChannelDeleted(channelId: string, memberIds: string[]) {
+    const payload = {
+      type: 'channel_deleted',
+      channelId,
+    }
+
+    for (const userId of memberIds) {
+      const userChannel = `users/${userId}`
+      transmit.broadcast(userChannel, payload)
+    }
+  }
 }
 
