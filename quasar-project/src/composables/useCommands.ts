@@ -1,6 +1,16 @@
 import { useAuthStore, useChannelStore, useChatStore, useUserStore } from 'src/stores/pinia-stores'
 import { userService } from 'src/services/api'
 
+export function sanitizeChannelName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
 export function useCommands() {
   const authStore = useAuthStore()
   const channelStore = useChannelStore()
@@ -40,11 +50,17 @@ export function useCommands() {
     try {
       switch (command) {
         case 'join': {
-          const channelName = args[0]
+          const rawChannelName = args[0]
           const isPrivate = args[1]?.toLowerCase() === 'private'
 
-          if (!channelName) {
+          if (!rawChannelName) {
             return { success: false, error: 'Usage: /join <channel-name> [private]' }
+          }
+
+          const channelName = sanitizeChannelName(rawChannelName)
+          
+          if (channelName.length < 3) {
+            return { success: false, error: 'Channel name must be at least 3 characters (lowercase, no spaces)' }
           }
 
           // First check if already in local store

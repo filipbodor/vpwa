@@ -164,10 +164,15 @@ export const useChannelStore = defineStore('channels', () => {
     }
   }
 
+  function removeChannelFromStore(channelId: string) {
+    channels.value.delete(channelId)
+  }
+
   return {
     channels, isLoading, error, channelList, publicChannels, privateChannels, newInviteChannels,
     fetchMyChannels, fetchPublicChannels, fetchChannelById, createChannel, joinChannel, leaveChannel,
-    deleteChannel, inviteUser, removeUser, voteKick, getChannelById, findChannelByName, clearInviteFlag
+    deleteChannel, inviteUser, removeUser, voteKick, getChannelById, findChannelByName, clearInviteFlag,
+    removeChannelFromStore
   }
 })
 
