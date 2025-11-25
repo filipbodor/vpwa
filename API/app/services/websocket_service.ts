@@ -96,5 +96,42 @@ export class WebSocketService {
     const userChannel = `users/${userId}`
     transmit.broadcast(userChannel, notification)
   }
+
+  static async broadcastChannelMemberAdded(channelId: string, user: { id: string, username: string, firstName: string, lastName: string, fullName: string, avatar?: string, status: string }) {
+    const payload = {
+      type: 'channel_member_added',
+      channelId,
+      user,
+    }
+
+    const channelName = `channels/${channelId}`
+    transmit.broadcast(channelName, payload)
+  }
+
+  static async broadcastChannelMemberRemoved(channelId: string, userId: string) {
+    const payload = {
+      type: 'channel_member_removed',
+      channelId,
+      userId,
+    }
+
+    const channelName = `channels/${channelId}`
+    transmit.broadcast(channelName, payload)
+    
+    const userChannel = `users/${userId}`
+    transmit.broadcast(userChannel, payload)
+  }
+
+  static async broadcastUserInvited(channelId: string, userId: string, channelName: string, invitedBy: string) {
+    const payload = {
+      type: 'channel_invited',
+      channelId,
+      channelName,
+      invitedBy,
+    }
+
+    const userChannel = `users/${userId}`
+    transmit.broadcast(userChannel, payload)
+  }
 }
 

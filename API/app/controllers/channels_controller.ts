@@ -2,9 +2,11 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Channel from '#models/channel'
 import ChannelBan from '#models/channel_ban'
 import ChannelKickVote from '#models/channel_kick_vote'
+import User from '#models/user'
 import { DateTime } from 'luxon'
 import { createChannelValidator, inviteUserValidator, kickUserValidator } from '#validators/channel'
 import db from '@adonisjs/lucid/services/db'
+import { WebSocketService } from '#services/websocket_service'
 
 export default class ChannelsController {
   /**
@@ -217,6 +219,17 @@ export default class ChannelsController {
 
     await channel.load('members')
 
+    // Broadcast to all channel members that someone joined
+    await WebSocketService.broadcastChannelMemberAdded(channel.id, {
+      id: user.id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName: user.fullName,
+      avatar: user.avatar || undefined,
+      status: user.status,
+    })
+
     return response.ok({
       channel: {
         id: channel.id,
@@ -261,6 +274,9 @@ export default class ChannelsController {
     }
 
     await channel.related('members').detach([user.id])
+
+    // Broadcast to all remaining channel members that someone left
+    await WebSocketService.broadcastChannelMemberRemoved(channel.id, user.id)
 
     return response.ok({
       message: 'Successfully left the channel',
@@ -326,6 +342,23 @@ export default class ChannelsController {
       },
     })
 
+    // Load the invited user
+    const invitedUser = await User.findOrFail(data.userId)
+
+    // Notify the invited user
+    await WebSocketService.broadcastUserInvited(channel.id, data.userId, channel.name, user.username)
+
+    // Broadcast to all channel members that someone was invited
+    await WebSocketService.broadcastChannelMemberAdded(channel.id, {
+      id: invitedUser.id,
+      username: invitedUser.username,
+      firstName: invitedUser.firstName,
+      lastName: invitedUser.lastName,
+      fullName: invitedUser.fullName,
+      avatar: invitedUser.avatar || undefined,
+      status: invitedUser.status,
+    })
+
     return response.ok({
       message: ban ? 'User unbanned and invited successfully' : 'User invited successfully',
     })
@@ -389,6 +422,9 @@ export default class ChannelsController {
       .where('channel_id', channel.id)
       .where('user_id', data.userId)
       .delete()
+
+    // Broadcast to all channel members and the kicked user
+    await WebSocketService.broadcastChannelMemberRemoved(channel.id, data.userId)
 
     return response.ok({
       message: 'User kicked and banned permanently',
@@ -486,6 +522,9 @@ export default class ChannelsController {
         .where('channel_id', channel.id)
         .where('user_id', data.userId)
         .delete()
+
+      // Broadcast to all channel members and the kicked user
+      await WebSocketService.broadcastChannelMemberRemoved(channel.id, data.userId)
 
       return response.ok({
         message: 'User has been kicked and banned (3+ votes)',

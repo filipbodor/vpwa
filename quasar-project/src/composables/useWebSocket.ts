@@ -1,5 +1,5 @@
 import { ref, onUnmounted } from 'vue'
-import { useAuthStore, useMessageStore, useUserStore, useTypingStore } from 'src/stores/pinia-stores'
+import { useAuthStore, useMessageStore, useUserStore, useTypingStore, useChannelStore, useChatStore } from 'src/stores/pinia-stores'
 import { useAppNotifications } from './useAppNotifications'
 import type { Message } from 'src/models'
 
@@ -12,6 +12,8 @@ export function useWebSocket() {
   const messageStore = useMessageStore()
   const userStore = useUserStore()
   const typingStore = useTypingStore()
+  const channelStore = useChannelStore()
+  const chatStore = useChatStore()
   const notifications = useAppNotifications()
 
   const subscribedChannels = ref<Set<string>>(new Set())
@@ -161,6 +163,15 @@ export function useWebSocket() {
       case 'notification':
         handleNotification(payload)
         break
+      case 'channel_member_added':
+        handleChannelMemberAdded(payload)
+        break
+      case 'channel_member_removed':
+        handleChannelMemberRemoved(payload)
+        break
+      case 'channel_invited':
+        handleChannelInvited(payload)
+        break
       default:
         console.warn('[WebSocket] Unknown message type:', payload.type)
     }
@@ -248,6 +259,43 @@ export function useWebSocket() {
   function handleNotification(data: any) {
     const { title, body, avatar, mentions } = data
     notifications.showNotification(title, body, avatar, mentions)
+  }
+
+  async function handleChannelMemberAdded(data: any) {
+    const { channelId, user } = data
+    
+    userStore.addUser(user)
+    
+    const channel = channelStore.getChannelById(channelId)
+    if (channel) {
+      await channelStore.fetchMyChannels()
+    }
+  }
+
+  async function handleChannelMemberRemoved(data: any) {
+    const { channelId, userId } = data
+    
+    if (userId === authStore.currentUserId) {
+      channelStore.channels.delete(channelId)
+      
+      if (chatStore.activeThread?.type === 'channel' && chatStore.activeThread.id === channelId) {
+        chatStore.closeThread()
+      }
+    } else {
+      await channelStore.fetchMyChannels()
+    }
+  }
+
+  async function handleChannelInvited(data: any) {
+    const { channelId, channelName } = data
+    
+    await channelStore.fetchMyChannels()
+    
+    notifications.showNotification(
+      'Channel Invitation',
+      `You've been invited to #${channelName}`,
+      undefined
+    )
   }
 
   function disconnect() {
