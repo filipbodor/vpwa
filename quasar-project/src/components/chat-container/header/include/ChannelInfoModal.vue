@@ -1,6 +1,6 @@
 <template>
   <q-dialog v-model="isOpen" @hide="handleClose">
-    <q-card style="min-width: 500px; max-width: 600px">
+    <q-card class="channel-card">
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">Channel Information</div>
         <q-space />
@@ -40,7 +40,7 @@
             Members ({{ members.length }})
           </div>
           <q-list bordered separator class="rounded-borders">
-            <q-item v-for="member in members" :key="member.id" class="q-pa-md">
+            <q-item v-for="member in members" :key="member.id" class="q-pa-md member-item">
               <q-item-section avatar>
                 <q-avatar :color="getStatusColor(member.status)" text-color="white" size="40px">
                   {{ member.avatar || member.fullName.charAt(0) }}
@@ -142,6 +142,26 @@ function handleClose() {
 <style scoped>
 .rounded-borders {
   border-radius: 8px;
+}
+
+.channel-card {
+  width: 90vw;
+  max-width: 600px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .member-item {
+    flex-wrap: wrap;
+  }
+  .member-item .q-item-section[side] {
+    margin-left: 0;
+    padding-top: 4px;
+  }
 }
 </style>
 
