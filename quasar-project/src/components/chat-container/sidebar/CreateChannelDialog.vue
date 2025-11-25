@@ -29,13 +29,22 @@
               outlined
               dense
               placeholder="e.g. plan-budget"
-              :rules="[(v) => !!v || 'Name is required']"
+              :rules="[
+                (v) => !!v || 'Name is required',
+                (v) => v.trim().length >= 3 || 'Name must be at least 3 characters'
+              ]"
               class="channel-input"
             >
               <template v-slot:prepend>
                 <span class="text-grey-7">#</span>
               </template>
             </q-input>
+            <div class="input-hint">
+              Names must be lowercase, without spaces or special characters (e.g. team-general)
+            </div>
+            <div v-if="showPreview" class="name-preview">
+              Channel name will be: <strong>#{{ sanitizedName }}</strong>
+            </div>
           </div>
 
           <div class="q-mb-lg">
@@ -93,6 +102,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { sanitizeChannelName } from 'src/composables/useCommands'
 
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{
@@ -109,10 +119,28 @@ const name = ref('')
 const description = ref('')
 const isPrivate = ref(false)
 
+const sanitizedName = computed(() => {
+  if (!name.value) return ''
+  return sanitizeChannelName(name.value)
+})
+
+const showPreview = computed(() => {
+  return name.value.trim() !== '' && sanitizedName.value !== name.value.trim()
+})
+
 function submit() {
   const n = name.value.trim()
   if (!n) return
-  emit('create', { name: n, description: description.value.trim() || undefined, isPrivate: !!isPrivate.value })
+  
+  if (sanitizedName.value.length < 3) {
+    return
+  }
+  
+  emit('create', { 
+    name: sanitizedName.value, 
+    description: description.value.trim() || undefined, 
+    isPrivate: !!isPrivate.value 
+  })
   open.value = false
 }
 
@@ -222,6 +250,27 @@ watch(open, (v) => {
 
 .create-btn:hover {
   background: #4a154b;
+}
+
+.input-hint {
+  font-size: 12px;
+  color: #616061;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.name-preview {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1d1c1d;
+}
+
+.name-preview strong {
+  color: #1264a3;
+  font-weight: 600;
 }
 </style>
 
