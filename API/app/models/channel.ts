@@ -4,6 +4,8 @@ import { BaseModel, column, manyToMany, belongsTo, hasMany, afterSave } from '@a
 import type { ManyToMany, BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import Message from './message.js'
+import { WebSocketService } from '#services/websocket_service' // <-- import this
+
 
 export default class Channel extends BaseModel {
   @column({ isPrimary: true })
@@ -48,26 +50,32 @@ export default class Channel extends BaseModel {
 
  
   @afterSave()
-  static async scheduleDeletion(channel: Channel) {
-    const delay = 60 * 1000 
+static async scheduleDeletion(channel: Channel) {
+  const delay = 60 * 1000 // 1 minute
 
-    if ((channel as any)._deletionTimeout) {
-      clearTimeout((channel as any)._deletionTimeout)
-    }
-  
-    ;(channel as any)._deletionTimeout = setTimeout(async () => {
-      try {
-        const freshChannel = await Channel.find(channel.id)
-        if (!freshChannel) return
-        
-        if (DateTime.now().toMillis() - freshChannel.lastActiveAt.toMillis() >= 60_000) {
-          await freshChannel.related('members').detach()
-          await freshChannel.delete()
-          console.log(`[ImmediateDeletion] Deleted channel: ${freshChannel.name}`)
-        }
-      } catch (err) {
-        console.error('[ImmediateDeletion] Error deleting channel:', err)
-      }
-    }, delay)
+  if ((channel as any)._deletionTimeout) {
+    clearTimeout((channel as any)._deletionTimeout)
   }
+
+  ;(channel as any)._deletionTimeout = setTimeout(async () => {
+    try {
+      const freshChannel = await Channel.find(channel.id)
+      if (!freshChannel) return
+
+      if (DateTime.now().toMillis() - freshChannel.lastActiveAt.toMillis() >= 60_000) {
+        await freshChannel.load('members')
+        const memberIds = freshChannel.members.map((m) => m.id)
+
+        await freshChannel.related('members').detach()
+        await freshChannel.delete()
+
+        await WebSocketService.broadcastChannelDeleted(freshChannel.id, memberIds)
+
+        console.log(`[ImmediateDeletion] Deleted channel: ${freshChannel.name}`)
+      }
+    } catch (err) {
+      console.error('[ImmediateDeletion] Error deleting channel:', err)
+    }
+  }, delay)
+}
 }
