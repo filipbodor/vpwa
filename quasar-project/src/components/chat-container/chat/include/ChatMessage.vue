@@ -17,9 +17,14 @@
         }"
       >
       <div class="message-avatar">
-        <q-avatar size="36px" color="primary" text-color="white">
-          {{ msg.avatar || msg.sender.charAt(0).toUpperCase() }}
-        </q-avatar>
+  <q-avatar size="36px" color="primary" text-color="white">
+    {{ msg.avatar || msg.sender.charAt(0).toUpperCase() }}
+  </q-avatar>
+  <span
+    class="status-dot"
+    :class="getStatusColor(msg.status)"
+    title="User status"
+  ></span>
 </div>
         <div class="message-content">
           <div class="message-header">
@@ -49,8 +54,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick, watch, reactive } from 'vue'
 import { QScrollArea } from 'quasar'
+import type { User, UserStatus } from 'src/models'
+
+
+
+
+
 
 const props = defineProps<{
   messages: {
@@ -61,9 +72,23 @@ const props = defineProps<{
     text: string
     mentions?: string[]
     timestamp?: number
+    status?: UserStatus;
   }[]
   currentUserId: string
 }>()
+
+
+
+const messagesReactive = reactive([...props.messages])
+
+function getStatusColor(status?: UserStatus): string {
+  const colors: Record<UserStatus, string> = {
+    online: 'positive',
+    dnd: 'negative',
+    offline: 'grey',
+  }
+  return status ? colors[status] : colors.offline
+}
 
 const scrollArea = ref<QScrollArea | null>(null)
 const BATCH_SIZE = 20
@@ -212,6 +237,7 @@ watch(
 )
 
 onMounted(async () => {
+  
   if (!scrollArea.value) return
 
   if (displayedMessages.value.length === 0) {
@@ -321,7 +347,21 @@ onMounted(async () => {
   border-radius: 3px;
   cursor: pointer;
 }
-.mention:hover {
-  background: #bbdefb;
+.message-avatar {
+  position: relative; /* positioning context for dot */
+  display: inline-block;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 0;    /* adjust so dot overlaps outside */
+  right: 0;     /* adjust so dot overlaps outside */
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background-color: green; /* temporary for testing */
+  box-sizing: border-box;
+  z-index: 10; /* make sure it’s on top */
 }
 </style>
