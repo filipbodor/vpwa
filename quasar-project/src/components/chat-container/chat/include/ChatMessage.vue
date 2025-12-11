@@ -318,9 +318,14 @@ onMounted(async () => {
   color: #1d1c1d;
   font-size: 15px;
   line-height: 1.46668;
-  word-wrap: break-word;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: background 0.15s ease;
+
+  width: fit-content;
+  align-self: flex-start;
+
+  overflow-wrap: break-word;   
+  word-break: break-word;     
 }
 .message-bubble:hover {
   background: #e8e7e8;
