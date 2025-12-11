@@ -2,7 +2,7 @@
   <div class="user-bar">
     <div class="user-info">
       <q-avatar size="36px" color="primary" text-color="white">
-        <span class="avatar-text">{{ getInitials(username) }}</span>
+        {{ avatar }}
       </q-avatar>
       <div class="user-details">
         <div class="user-name">{{ username }}</div>
@@ -83,6 +83,10 @@ const chat = useChat()
 const showSettings = ref(false)
 
 const username = computed(() => props.username || chat.currentUser.value?.fullName || 'Meno uzivatela')
+const avatar = computed(() => {
+  // Use the emoji from the user object or fallback
+  return chat.currentUser.value?.avatar || '👤'
+})
 
 async function setStatus(s: 'online' | 'dnd' | 'offline') {
   try {

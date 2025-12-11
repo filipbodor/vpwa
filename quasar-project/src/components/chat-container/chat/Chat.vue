@@ -33,6 +33,7 @@ const messages = computed(() =>
     id: m.id,
     senderId: m.senderId,
     sender: m.senderName,
+    avatar: m.senderAvatar || null, 
     text: m.text,
     mentions: m.mentions || [],
     timestamp: m.createdAt,

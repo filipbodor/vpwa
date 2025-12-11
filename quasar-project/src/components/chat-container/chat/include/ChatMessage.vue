@@ -16,11 +16,16 @@
           'message-mentioned': isMentioned(msg)
         }"
       >
-        <div class="message-avatar">
-          <q-avatar size="36px" color="primary" text-color="white">
-            {{ msg.sender.charAt(0).toUpperCase() }}
-          </q-avatar>
-        </div>
+      <div class="message-avatar">
+  <q-avatar size="36px" color="primary" text-color="white">
+    {{ msg.avatar || msg.sender.charAt(0).toUpperCase() }}
+  </q-avatar>
+  <span
+    class="status-dot"
+    :class="getStatusColor(msg.status)"
+    title="User status"
+  ></span>
+</div>
         <div class="message-content">
           <div class="message-header">
             <span class="message-sender">{{ msg.sender }}</span>
@@ -49,13 +54,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick, watch, reactive } from 'vue'
 import { QScrollArea } from 'quasar'
+import type { User, UserStatus } from 'src/models'
+
+
+
+
+
 
 const props = defineProps<{
-  messages: { id?: string; senderId: string; sender: string; text: string; mentions?: string[]; timestamp?: number }[]
+  messages: {
+    id?: string
+    senderId: string
+    sender: string
+    avatar?: string | null   // <-- add this
+    text: string
+    mentions?: string[]
+    timestamp?: number
+    status?: UserStatus;
+  }[]
   currentUserId: string
 }>()
+
+
+
+const messagesReactive = reactive([...props.messages])
+
+function getStatusColor(status?: UserStatus): string {
+  const colors: Record<UserStatus, string> = {
+    online: 'positive',
+    dnd: 'negative',
+    offline: 'grey',
+  }
+  return status ? colors[status] : colors.offline
+}
 
 const scrollArea = ref<QScrollArea | null>(null)
 const BATCH_SIZE = 20
@@ -63,7 +96,9 @@ const loading = ref(false)
 
 // Start with the newest messages at bottom
 const displayedMessages = ref(props.messages.slice(-BATCH_SIZE))
-
+function onAvatarError(msg: typeof props.messages[number]) {
+  msg.avatar = null
+}
 async function loadMoreMessages(index: number, done: (stop?: boolean) => void) {
   if (loading.value) {
     done(true)
@@ -202,6 +237,7 @@ watch(
 )
 
 onMounted(async () => {
+  
   if (!scrollArea.value) return
 
   if (displayedMessages.value.length === 0) {
@@ -282,9 +318,14 @@ onMounted(async () => {
   color: #1d1c1d;
   font-size: 15px;
   line-height: 1.46668;
-  word-wrap: break-word;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: background 0.15s ease;
+
+  width: fit-content;
+  align-self: flex-start;
+
+  overflow-wrap: break-word;   
+  word-break: break-word;     
 }
 .message-bubble:hover {
   background: #e8e7e8;
@@ -311,7 +352,21 @@ onMounted(async () => {
   border-radius: 3px;
   cursor: pointer;
 }
-.mention:hover {
-  background: #bbdefb;
+.message-avatar {
+  position: relative; /* positioning context for dot */
+  display: inline-block;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 0;    /* adjust so dot overlaps outside */
+  right: 0;     /* adjust so dot overlaps outside */
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background-color: green; /* temporary for testing */
+  box-sizing: border-box;
+  z-index: 10; /* make sure it’s on top */
 }
 </style>

@@ -51,7 +51,7 @@ export default class Channel extends BaseModel {
  
   @afterSave()
 static async scheduleDeletion(channel: Channel) {
-  const delay = 60 * 1000 // 1 minute
+  const delay = 600000 * 1000 // 1 minute
 
   if ((channel as any)._deletionTimeout) {
     clearTimeout((channel as any)._deletionTimeout)

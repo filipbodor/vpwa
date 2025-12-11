@@ -190,7 +190,7 @@ function isOwner(ch: Channel) {
 }
 
 .channel-name {
-  font-size: 15px;
+  font-size: 17px;
   color: #1d1c1d;
   overflow: hidden;
   text-overflow: ellipsis;

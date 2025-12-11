@@ -14,7 +14,7 @@ import transmit from '@adonisjs/transmit/services/main'
 const AuthController = () => import('#controllers/auth_controller')
 const ChannelsController = () => import('#controllers/channels_controller')
 const MessagesController = () => import('#controllers/messages_controller')
-const DirectMessagesController = () => import('#controllers/direct_messages_controller')
+//const DirectMessagesController = () => import('#controllers/direct_messages_controller')
 const UsersController = () => import('#controllers/users_controller')
 const TypingController = () => import('#controllers/typing_controller')
 
@@ -57,12 +57,12 @@ router.group(() => {
   router.delete('/:id', [MessagesController, 'destroy'])
 }).prefix('/messages').use(middleware.auth())
 
-router.group(() => {
+/*router.group(() => {
   router.get('/', [DirectMessagesController, 'index'])
   router.post('/', [DirectMessagesController, 'store'])
   router.get('/:id/messages', [DirectMessagesController, 'messages'])
   router.post('/:id/messages', [DirectMessagesController, 'sendMessage'])
-}).prefix('/direct-messages').use(middleware.auth())
+}).prefix('/direct-messages').use(middleware.auth())*/
 
 router.group(() => {
   router.get('/search', [UsersController, 'search'])

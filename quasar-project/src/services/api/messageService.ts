@@ -38,13 +38,17 @@ export const messageService = {
         response = await apiClient.get<MessagesResponse>(`/direct-messages/${thread.id}/messages`)
       }
 
-      const messages = response.data.messages.map(msg => ({
-        id: msg.id,
-        senderId: msg.userId,
-        text: msg.content,
-        mentions: msg.mentions || [],
-        createdAt: msg.createdAt,
-      }))
+      const messages = response.data.messages.map(msg => {
+        console.log('Avatar URL:', msg.user.avatar)  // <--- check this
+        return {
+          id: msg.id,
+          senderId: msg.userId,
+          text: msg.content,
+          mentions: msg.mentions || [],
+          createdAt: msg.createdAt,
+          avatar: msg.user.avatar || null,
+        }
+      })
 
       const users: User[] = response.data.messages.map(msg => {
         const user: User = {
