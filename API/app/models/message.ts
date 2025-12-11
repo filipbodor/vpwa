@@ -3,7 +3,6 @@ import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import Channel from './channel.js'
-import DirectMessage from './direct_message.js'
 
 export default class Message extends BaseModel {
   @column({ isPrimary: true })
@@ -56,8 +55,4 @@ export default class Message extends BaseModel {
   })
   declare channel: BelongsTo<typeof Channel>
 
-  @belongsTo(() => DirectMessage, {
-    foreignKey: 'directMessageId',
-  })
-  declare directMessage: BelongsTo<typeof DirectMessage>
 }
