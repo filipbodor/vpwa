@@ -1,8 +1,11 @@
+// Channel.ts
 import { DateTime } from 'luxon'
-import { BaseModel, column, manyToMany, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, column, manyToMany, belongsTo, hasMany, afterSave } from '@adonisjs/lucid/orm'
 import type { ManyToMany, BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import Message from './message.js'
+import { WebSocketService } from '#services/websocket_service' // <-- import this
+
 
 export default class Channel extends BaseModel {
   @column({ isPrimary: true })
@@ -30,9 +33,7 @@ export default class Channel extends BaseModel {
   declare updatedAt: DateTime | null
 
   // Relationships
-  @belongsTo(() => User, {
-    foreignKey: 'ownerId',
-  })
+  @belongsTo(() => User, { foreignKey: 'ownerId' })
   declare owner: BelongsTo<typeof User>
 
   @manyToMany(() => User, {
@@ -44,14 +45,37 @@ export default class Channel extends BaseModel {
   })
   declare members: ManyToMany<typeof User>
 
-  @hasMany(() => Message, {
-    foreignKey: 'channelId',
-  })
+  @hasMany(() => Message, { foreignKey: 'channelId' })
   declare messages: HasMany<typeof Message>
 
-  // Check if channel is inactive (30+ days)
-  get isInactive(): boolean {
-    const thirtyDaysAgo = DateTime.now().minus({ days: 30 })
-    return this.lastActiveAt < thirtyDaysAgo
+ 
+  @afterSave()
+static async scheduleDeletion(channel: Channel) {
+  const delay = 60 * 1000 // 1 minute
+
+  if ((channel as any)._deletionTimeout) {
+    clearTimeout((channel as any)._deletionTimeout)
   }
+
+  ;(channel as any)._deletionTimeout = setTimeout(async () => {
+    try {
+      const freshChannel = await Channel.find(channel.id)
+      if (!freshChannel) return
+
+      if (DateTime.now().toMillis() - freshChannel.lastActiveAt.toMillis() >= 60_000) {
+        await freshChannel.load('members')
+        const memberIds = freshChannel.members.map((m) => m.id)
+
+        await freshChannel.related('members').detach()
+        await freshChannel.delete()
+
+        await WebSocketService.broadcastChannelDeleted(freshChannel.id, memberIds)
+
+        console.log(`[ImmediateDeletion] Deleted channel: ${freshChannel.name}`)
+      }
+    } catch (err) {
+      console.error('[ImmediateDeletion] Error deleting channel:', err)
+    }
+  }, delay)
+}
 }
