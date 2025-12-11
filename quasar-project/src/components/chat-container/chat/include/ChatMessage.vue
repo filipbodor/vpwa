@@ -16,11 +16,11 @@
           'message-mentioned': isMentioned(msg)
         }"
       >
-        <div class="message-avatar">
-          <q-avatar size="36px" color="primary" text-color="white">
-            {{ msg.sender.charAt(0).toUpperCase() }}
-          </q-avatar>
-        </div>
+      <div class="message-avatar">
+        <q-avatar size="36px" color="primary" text-color="white">
+          {{ msg.avatar || msg.sender.charAt(0).toUpperCase() }}
+        </q-avatar>
+</div>
         <div class="message-content">
           <div class="message-header">
             <span class="message-sender">{{ msg.sender }}</span>
@@ -53,7 +53,15 @@ import { ref, onMounted, nextTick, watch } from 'vue'
 import { QScrollArea } from 'quasar'
 
 const props = defineProps<{
-  messages: { id?: string; senderId: string; sender: string; text: string; mentions?: string[]; timestamp?: number }[]
+  messages: {
+    id?: string
+    senderId: string
+    sender: string
+    avatar?: string | null   // <-- add this
+    text: string
+    mentions?: string[]
+    timestamp?: number
+  }[]
   currentUserId: string
 }>()
 
@@ -63,7 +71,9 @@ const loading = ref(false)
 
 // Start with the newest messages at bottom
 const displayedMessages = ref(props.messages.slice(-BATCH_SIZE))
-
+function onAvatarError(msg: typeof props.messages[number]) {
+  msg.avatar = null
+}
 async function loadMoreMessages(index: number, done: (stop?: boolean) => void) {
   if (loading.value) {
     done(true)
