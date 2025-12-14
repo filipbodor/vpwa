@@ -20,11 +20,6 @@
   <q-avatar size="36px" color="primary" text-color="white">
     {{ msg.avatar || msg.sender.charAt(0).toUpperCase() }}
   </q-avatar>
-  <span
-    class="status-dot"
-    :class="getStatusColor(msg.status)"
-    title="User status"
-  ></span>
 </div>
         <div class="message-content">
           <div class="message-header">
@@ -138,17 +133,17 @@ async function loadMoreMessages(index: number, done: (stop?: boolean) => void) {
   displayedMessages.value = [...olderBatch, ...displayedMessages.value]
 
   await nextTick()
-  
+
   if (scrollArea.value) {
     const scrollHeightAfter = scrollTarget.scrollHeight
     const addedHeight = scrollHeightAfter - scrollHeightBefore
     const newScrollTop = scrollTopBefore + addedHeight
-    
+
     scrollArea.value.setScrollPosition('vertical', newScrollTop, 0)
   }
 
   await nextTick()
-  
+
   const hasMore = displayedMessages.value.length < totalMessages
   done(!hasMore)
   loading.value = false
@@ -204,8 +199,8 @@ watch(
     const firstMsgId = newMessages[0]?.id || ''
     const lastMsgId = newMessages[newMessages.length - 1]?.id || ''
     const newKey = `${firstMsgId}-${lastMsgId}-${newMessages.length}`
-    
-    const isSwitchingChat = oldMessages && oldMessages.length > 0 && 
+
+    const isSwitchingChat = oldMessages && oldMessages.length > 0 &&
                             oldMessages[0]?.id !== firstMsgId
 
     if (isSwitchingChat) {
@@ -237,18 +232,18 @@ watch(
 )
 
 onMounted(async () => {
-  
+
   if (!scrollArea.value) return
 
   if (displayedMessages.value.length === 0) {
     displayedMessages.value = props.messages.slice(-BATCH_SIZE)
   }
-  
+
   await nextTick()
   await nextTick()
 
   const scrollTarget = scrollArea.value.getScrollTarget()
-  
+
   const tryLoadOlder = async () => {
     if (scrollTarget.scrollHeight > scrollTarget.clientHeight || displayedMessages.value.length >= props.messages.length) {
       if (shouldScrollToBottom.value || isInitialLoad.value) {
@@ -324,8 +319,8 @@ onMounted(async () => {
   width: fit-content;
   align-self: flex-start;
 
-  overflow-wrap: break-word;   
-  word-break: break-word;     
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .message-bubble:hover {
   background: #e8e7e8;

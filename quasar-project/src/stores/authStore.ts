@@ -19,9 +19,8 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       // Clear all stores before login to prevent stale data
-      const { useChannelStore, useChatStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
+      const { useChannelStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
       useChannelStore().channels.clear()
-      useChatStore().directMessages.clear()
       useUserStore().clearUsers()
       useMessageStore().clearAllMessages()
       
@@ -40,9 +39,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     error.value = null
     try {
-      const { useChannelStore, useChatStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
+      const { useChannelStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
       useChannelStore().channels.clear()
-      useChatStore().directMessages.clear()
       useUserStore().clearUsers()
       useMessageStore().clearAllMessages()
       
@@ -104,9 +102,8 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem('current_user')
       currentUser.value = null
       
-      const { useChannelStore, useChatStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
+      const { useChannelStore, useUserStore, useMessageStore } = await import('src/stores/pinia-stores')
       useChannelStore().channels.clear()
-      useChatStore().directMessages.clear()
       useUserStore().clearUsers()
       useMessageStore().clearAllMessages()
       

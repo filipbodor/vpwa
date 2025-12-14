@@ -37,10 +37,8 @@ const activeTitle = computed(() => {
   if (thread.type === 'channel') {
     const channelInfo = chat.activeChannelInfo.value
     return channelInfo ? channelInfo.name : 'Channel'
-  } else {
-    const dmInfo = chat.activeDMInfo.value
-    return dmInfo ? dmInfo.userName : 'Direct Message'
   }
+  return 'Slack 2.0'
 })
 
 function toggleLeftDrawer() {

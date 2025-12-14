@@ -30,13 +30,7 @@ interface MessagesResponse {
 export const messageService = {
   async getMessages(thread: Thread): Promise<{ messages: Message[], users: User[] }> {
     try {
-      let response: { data: MessagesResponse }
-      
-      if (thread.type === 'channel') {
-        response = await apiClient.get<MessagesResponse>(`/channels/${thread.id}/messages`)
-      } else {
-        response = await apiClient.get<MessagesResponse>(`/direct-messages/${thread.id}/messages`)
-      }
+      const response = await apiClient.get<MessagesResponse>(`/channels/${thread.id}/messages`)
 
       const messages = response.data.messages.map(msg => {
         console.log('Avatar URL:', msg.user.avatar)  // <--- check this
@@ -73,13 +67,7 @@ export const messageService = {
   },
 
   async sendMessage(thread: Thread, text: string): Promise<{ message: Message, user: User }> {
-    let response: { data: { message: MessageResponse } }
-    
-    if (thread.type === 'channel') {
-      response = await apiClient.post(`/channels/${thread.id}/messages`, { content: text })
-    } else {
-      response = await apiClient.post(`/direct-messages/${thread.id}/messages`, { content: text })
-    }
+    const response = await apiClient.post<{ message: MessageResponse }>(`/channels/${thread.id}/messages`, { content: text })
 
     const msg = response.data.message
     const message: Message = {
