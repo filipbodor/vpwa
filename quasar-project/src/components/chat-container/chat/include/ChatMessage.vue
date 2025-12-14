@@ -274,10 +274,10 @@ onMounted(async () => {
   margin-bottom: 16px;
   gap: 12px;
   align-items: flex-start;
+  width: 100%;
 }
 .message-wrapper.message-sent {
   flex-direction: row-reverse;
-  align-items: flex-end;
 }
 .message-avatar {
   flex-shrink: 0;
@@ -289,6 +289,9 @@ onMounted(async () => {
 }
 .message-sent .message-content {
   align-items: flex-end;
+}
+.message-sent .message-bubble {
+  align-self: flex-end;
 }
 .message-header {
   display: flex;
