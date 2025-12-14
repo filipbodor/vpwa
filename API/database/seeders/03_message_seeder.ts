@@ -1,6 +1,5 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import Message from '#models/message'
-import DirectMessage from '#models/direct_message'
 import { DateTime } from 'luxon'
 
 export default class extends BaseSeeder {
@@ -21,20 +20,6 @@ export default class extends BaseSeeder {
       teamAlpha: '550e8400-e29b-41d4-a716-446655440103',
     }
 
-    // Create Direct Message conversations (ensure user1Id < user2Id)
-    const dm1 = await DirectMessage.create({
-      id: '550e8400-e29b-41d4-a716-446655440201',
-      user1Id: userIds.alice < userIds.you ? userIds.alice : userIds.you,
-      user2Id: userIds.alice < userIds.you ? userIds.you : userIds.alice,
-      lastMessageAt: DateTime.now().minus({ minutes: 10 }),
-    })
-
-    const dm2 = await DirectMessage.create({
-      id: '550e8400-e29b-41d4-a716-446655440202',
-      user1Id: userIds.bob < userIds.you ? userIds.bob : userIds.you,
-      user2Id: userIds.bob < userIds.you ? userIds.you : userIds.bob,
-      lastMessageAt: DateTime.now().minus({ hours: 2 }),
-    })
 
     // Channel messages for #general
     await Message.updateOrCreateMany('id', [
@@ -104,55 +89,8 @@ export default class extends BaseSeeder {
       },
     ])
 
-    // Direct messages between you and alice
-    await Message.updateOrCreateMany('id', [
-      {
-        id: '550e8400-e29b-41d4-a716-446655440309',
-        directMessageId: dm1.id,
-        userId: userIds.alice,
-        content: 'Hey! Quick question',
-        createdAt: DateTime.now().minus({ minutes: 30 }),
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440310',
-        directMessageId: dm1.id,
-        userId: userIds.you,
-        content: 'Sure, what do you need?',
-        createdAt: DateTime.now().minus({ minutes: 28 }),
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440311',
-        directMessageId: dm1.id,
-        userId: userIds.alice,
-        content: 'Can you review my PR?',
-        createdAt: DateTime.now().minus({ minutes: 25 }),
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440312',
-        directMessageId: dm1.id,
-        userId: userIds.you,
-        content: 'Of course! Will do.',
-        createdAt: DateTime.now().minus({ minutes: 20 }),
-      },
-    ])
+    
 
-    // Direct messages between you and bob
-    await Message.updateOrCreateMany('id', [
-      {
-        id: '550e8400-e29b-41d4-a716-446655440313',
-        directMessageId: dm2.id,
-        userId: userIds.bob,
-        content: 'Thanks for yesterday!',
-        createdAt: DateTime.now().minus({ hours: 2, minutes: 20 }),
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440314',
-        directMessageId: dm2.id,
-        userId: userIds.you,
-        content: 'No problem!',
-        createdAt: DateTime.now().minus({ hours: 2, minutes: 10 }),
-      },
-    ])
 
     console.log('✅ Messages seeded successfully!')
   }
