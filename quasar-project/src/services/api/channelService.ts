@@ -8,7 +8,7 @@ interface UserInfo {
   lastName: string
   fullName: string
   avatar?: string
-  status: 'online' | 'away' | 'busy' | 'offline'
+  status: 'online' | 'dnd' | 'offline'
 }
 
 interface ChannelResponse {
@@ -49,7 +49,7 @@ export const channelService = {
     lastName: string
     fullName: string
     avatar?: string
-    status: 'online' | 'away' | 'busy' | 'offline'
+    status: 'online' | 'dnd' | 'offline'
   }> }> {
     const { data } = await apiClient.get<ChannelsResponse>('/channels')
     

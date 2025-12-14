@@ -15,11 +15,17 @@ export const useUserStore = defineStore('users', () => {
   }
 
   function addUser(user: User) {
-    users.value.set(user.id, user)
+    // Update existing user to merge status correctly
+    const existing = users.value.get(user.id)
+    if (existing) {
+      users.value.set(user.id, { ...existing, ...user })
+    } else {
+      users.value.set(user.id, user)
+    }
   }
 
   function addUsers(userList: User[]) {
-    userList.forEach(user => users.value.set(user.id, user))
+    userList.forEach(user => addUser(user))
   }
 
   async function fetchUserById(userId: string) {
