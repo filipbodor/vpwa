@@ -6,7 +6,6 @@ import User from './user.js'
 import Message from './message.js'
 import { WebSocketService } from '#services/websocket_service' // <-- import this
 
-
 export default class Channel extends BaseModel {
   @column({ isPrimary: true })
   declare id: string
@@ -48,34 +47,33 @@ export default class Channel extends BaseModel {
   @hasMany(() => Message, { foreignKey: 'channelId' })
   declare messages: HasMany<typeof Message>
 
- 
   @afterSave()
-static async scheduleDeletion(channel: Channel) {
-  const delay = 600000 * 1000 // 1 minute
+  static async scheduleDeletion(channel: Channel) {
+    const delay = 600000 * 1000 // 1 minute
 
-  if ((channel as any)._deletionTimeout) {
-    clearTimeout((channel as any)._deletionTimeout)
-  }
-
-  ;(channel as any)._deletionTimeout = setTimeout(async () => {
-    try {
-      const freshChannel = await Channel.find(channel.id)
-      if (!freshChannel) return
-
-      if (DateTime.now().toMillis() - freshChannel.lastActiveAt.toMillis() >= 60_000) {
-        await freshChannel.load('members')
-        const memberIds = freshChannel.members.map((m) => m.id)
-
-        await freshChannel.related('members').detach()
-        await freshChannel.delete()
-
-        await WebSocketService.broadcastChannelDeleted(freshChannel.id, memberIds)
-
-        console.log(`[ImmediateDeletion] Deleted channel: ${freshChannel.name}`)
-      }
-    } catch (err) {
-      console.error('[ImmediateDeletion] Error deleting channel:', err)
+    if ((channel as any)._deletionTimeout) {
+      clearTimeout((channel as any)._deletionTimeout)
     }
-  }, delay)
-}
+
+    ;(channel as any)._deletionTimeout = setTimeout(async () => {
+      try {
+        const freshChannel = await Channel.find(channel.id)
+        if (!freshChannel) return
+
+        if (DateTime.now().toMillis() - freshChannel.lastActiveAt.toMillis() >= 60_000) {
+          await freshChannel.load('members')
+          const memberIds = freshChannel.members.map((m) => m.id)
+
+          await freshChannel.related('members').detach()
+          await freshChannel.delete()
+
+          await WebSocketService.broadcastChannelDeleted(freshChannel.id, memberIds)
+
+          console.log(`[ImmediateDeletion] Deleted channel: ${freshChannel.name}`)
+        }
+      } catch (err) {
+        console.error('[ImmediateDeletion] Error deleting channel:', err)
+      }
+    }, delay)
+  }
 }

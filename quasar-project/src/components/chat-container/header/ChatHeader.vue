@@ -49,20 +49,23 @@ import { ref, computed } from 'vue'
 import LogOutBtn from 'src/components/chat-container/header/include/LogOutBtn.vue'
 import ChannelInfoModal from 'src/components/chat-container/header/include/ChannelInfoModal.vue'
 import { useChat } from 'src/composables'
-import { useUserStore } from 'src/stores/pinia-stores'
+import { useUserStore, useChannelStore } from 'src/stores/pinia-stores'
 
 defineEmits(['toggle-drawer'])
 
 const chat = useChat()
 const userStore = useUserStore()
+const channelStore = useChannelStore()
 
 const channelInfoModalOpen = ref(false)
 
 const channelInfo = computed(() => chat.activeChannelInfo.value)
 const users = computed(() => userStore.users)
 
-function showChannelInfo() {
+async function showChannelInfo() {
   if (chat.activeThread.value?.type === 'channel') {
+    // Refresh channel data to get fresh user statuses
+    await channelStore.fetchMyChannels()
     channelInfoModalOpen.value = true
   }
 }

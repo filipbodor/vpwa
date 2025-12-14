@@ -1,6 +1,5 @@
 import { computed } from 'vue'
 import { useAuthStore, useChannelStore, useChatStore, useMessageStore, useUserStore } from 'src/stores/pinia-stores'
-import type { Thread } from 'src/models'
 
 export function useChat() {
   const authStore = useAuthStore()
@@ -19,30 +18,6 @@ export function useChat() {
       ...channel,
       isOwner: channel.ownerId === currentUserId.value,
     }))
-  })
-
-  const directMessages = computed(() => {
-    return chatStore.dmList
-      .filter(dm => dm.userId !== currentUserId.value) // Filter out DMs with yourself
-      .map(dm => {
-        const user = userStore.getUserById(dm.userId)
-        const result: {
-          id: string
-          userId: string
-          name: string
-          avatar?: string
-          status?: 'online' | 'dnd' | 'offline'
-          lastMessageAt?: number
-        } = {
-          id: dm.id,
-          userId: dm.userId,
-          name: user?.fullName || 'Unknown',
-          status: user?.status || 'offline',
-        }
-        if (user?.avatar) result.avatar = user.avatar
-        if (dm.lastMessageAt) result.lastMessageAt = dm.lastMessageAt
-        return result
-      })
   })
 
   const activeMessages = computed(() => {
@@ -70,19 +45,6 @@ export function useChat() {
     }
   })
 
-  const activeDMInfo = computed(() => {
-    if (!activeThread.value || activeThread.value.type !== 'dm') return null
-    const dm = chatStore.getDMById(activeThread.value.id)
-    if (!dm) return null
-    const user = userStore.getUserById(dm.userId)
-    return {
-      ...dm,
-      userName: user?.fullName || 'Unknown',
-      userAvatar: user?.avatar,
-      userStatus: user?.status || 'offline',
-    }
-  })
-
   async function initialize() {
     try {
       if (!authStore.currentUser) {
@@ -91,7 +53,6 @@ export function useChat() {
       
       await Promise.all([
         channelStore.fetchMyChannels(),
-        chatStore.fetchDirectMessages(),
         userStore.fetchAllUsers(),
       ])
     } catch (error) {
@@ -103,11 +64,6 @@ export function useChat() {
   async function openChannel(channelId: string) {
     chatStore.openChannel(channelId)
     await messageStore.fetchMessages({ type: 'channel', id: channelId })
-  }
-
-  async function openDM(dmId: string) {
-    chatStore.openDM(dmId)
-    await messageStore.fetchMessages({ type: 'dm', id: dmId })
   }
 
   async function sendMessage(text: string) {
@@ -200,8 +156,8 @@ export function useChat() {
   }
 
   return {
-    currentUser, currentUserId, userStatus, activeThread, channels, directMessages,
-    activeMessages, activeChannelInfo, activeDMInfo, initialize, openChannel, openDM,
+    currentUser, currentUserId, userStatus, activeThread, channels,
+    activeMessages, activeChannelInfo, initialize, openChannel,
     sendMessage, createChannel, leaveChannel, deleteChannel, updateStatus,
     findChannelByName, findUserByName, inviteToChannel, removeFromChannel, clearChannelInvite
   }

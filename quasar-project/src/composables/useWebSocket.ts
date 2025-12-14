@@ -151,9 +151,6 @@ export function useWebSocket() {
       case 'channel_message':
         handleChannelMessage(payload)
         break
-      case 'direct_message':
-        handleDirectMessage(payload)
-        break
       case 'status_change':
         handleStatusChange(payload)
         break
@@ -197,38 +194,6 @@ export function useWebSocket() {
     
     if (!currentMessages.find(m => m.id === localMessage.id)) {
       messageStore.messagesByThread.set(`channel:${channelId}`, [...currentMessages, localMessage])
-    }
-    
-    if (message.senderId !== authStore.currentUserId) {
-      notifications.showNotification(
-        message.sender.fullName,
-        message.content,
-        message.sender.avatar,
-        message.mentions || []
-      )
-    }
-  }
-
-  function handleDirectMessage(data: any) {
-    const { directMessageId, message } = data
-
-    if (message.sender) {
-      userStore.addUser(message.sender)
-    }
-
-    const localMessage: Message = {
-      id: message.id,
-      senderId: message.senderId,
-      text: message.content,
-      createdAt: message.createdAt,
-      mentions: message.mentions || [],
-    }
-
-    const thread = { type: 'dm' as const, id: directMessageId }
-    const currentMessages = messageStore.getMessagesForThread(thread).value
-    
-    if (!currentMessages.find(m => m.id === localMessage.id)) {
-      messageStore.messagesByThread.set(`dm:${directMessageId}`, [...currentMessages, localMessage])
     }
     
     if (message.senderId !== authStore.currentUserId) {

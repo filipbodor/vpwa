@@ -1,4 +1,4 @@
-import type { User, Channel, DirectMessage, Message } from 'src/models'
+import type { User, Channel, Message } from 'src/models'
 
 export const CURRENT_USER_ID = '550e8400-e29b-41d4-a716-446655440001'
 
@@ -38,11 +38,6 @@ export const mockChannels: Channel[] = [
     memberIds: ['550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002'],
     lastActiveAt: Date.now() - 1800000,
   },
-]
-
-export const mockDirectMessages: DirectMessage[] = [
-  { id: 'dm-1', userId: '550e8400-e29b-41d4-a716-446655440002', lastMessageAt: Date.now() - 600000 },
-  { id: 'dm-2', userId: '550e8400-e29b-41d4-a716-446655440003', lastMessageAt: Date.now() - 7200000 },
 ]
 
 export const mockMessages: Record<string, Message[]> = {
@@ -100,23 +95,12 @@ export const mockMessages: Record<string, Message[]> = {
     { id: 'msg-59', senderId: '550e8400-e29b-41d4-a716-446655440001', text: "Let's start with the presentation.", createdAt: Date.now() + 200 },
     { id: 'msg-60', senderId: '550e8400-e29b-41d4-a716-446655440002', text: "Sure, I'll set up the slides.", createdAt: Date.now() + 300 },
   ],
-  // You can similarly expand channel-2, channel-3, dm-1, dm-2 with repeated / shuffled messages
   'channel:channel-2': [
     { id: 'msg-6', senderId: '550e8400-e29b-41d4-a716-446655440003', text: 'Anyone up for lunch? 🍕', createdAt: Date.now() - 5400000 },
     { id: 'msg-7', senderId: '550e8400-e29b-41d4-a716-446655440002', text: 'Sure! Where are we going?', createdAt: Date.now() - 5100000 },
   ],
   'channel:channel-3': [
     { id: 'msg-8', senderId: '550e8400-e29b-41d4-a716-446655440001', text: 'This is a private team channel', createdAt: Date.now() - 7200000 },
-  ],
-  'dm:dm-1': [
-    { id: 'msg-9', senderId: '550e8400-e29b-41d4-a716-446655440002', text: 'Hey! Quick question', createdAt: Date.now() - 1800000 },
-    { id: 'msg-10', senderId: '550e8400-e29b-41d4-a716-446655440001', text: 'Sure, what do you need?', createdAt: Date.now() - 1680000 },
-    { id: 'msg-11', senderId: '550e8400-e29b-41d4-a716-446655440002', text: 'Can you review my PR?', createdAt: Date.now() - 1500000 },
-    { id: 'msg-12', senderId: '550e8400-e29b-41d4-a716-446655440001', text: 'Of course! Will do.', createdAt: Date.now() - 1200000 },
-  ],
-  'dm:dm-2': [
-    { id: 'msg-13', senderId: '550e8400-e29b-41d4-a716-446655440003', text: 'Thanks for yesterday!', createdAt: Date.now() - 8400000 },
-    { id: 'msg-14', senderId: '550e8400-e29b-41d4-a716-446655440001', text: 'No problem!', createdAt: Date.now() - 7800000 },
   ],
 }
 

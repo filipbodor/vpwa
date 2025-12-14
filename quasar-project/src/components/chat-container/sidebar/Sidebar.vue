@@ -22,12 +22,6 @@
           @delete="handleDeleteChannel"
           @refresh="handleRefreshChannels"
         />
-
-        <DMList
-          :dms="chat.directMessages.value"
-          :current-dm-id="activeDMId"
-          @open="handleOpenDM"
-        />
       </div>
 
       <UserBar />
@@ -56,7 +50,6 @@ const chat = useChat()
 const showCreate = ref(false)
 
 const activeChannelId = ref<string>('')
-const activeDMId = ref<string>('')
 
 async function handleCreateChannel(payload: { name: string; description?: string | undefined; isPrivate: boolean }) {
   try {
@@ -75,7 +68,6 @@ async function handleCreateChannel(payload: { name: string; description?: string
 // Channel actions
 async function handleOpenChannel(ch: { id: string; isNewInvite?: boolean }) {
   activeChannelId.value = ch.id
-  activeDMId.value = ''
   await chat.openChannel(ch.id)
   
   // Clear invite flag if this was a new invitation
@@ -98,13 +90,6 @@ async function handleLeaveChannel(ch: { id: string; name?: string }) {
 async function handleDeleteChannel(ch: { id: string }) {
   await chat.deleteChannel(ch.id)
   if (activeChannelId.value === ch.id) activeChannelId.value = ''
-}
-
-// DM actions
-async function handleOpenDM(dm: { id: string }) {
-  activeDMId.value = dm.id
-  activeChannelId.value = ''
-  await chat.openDM(dm.id)
 }
 
 function handleRefreshChannels() {
@@ -159,8 +144,7 @@ function handleRefreshChannels() {
   padding: 16px 0;
 }
 
-.channel-name.active,
-.dm-name.active {
+.channel-name.active {
   font-weight: 700;
   color: #611f69;
 }
